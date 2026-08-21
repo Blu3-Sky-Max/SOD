@@ -1,0 +1,27 @@
+#Author: Usman Opeyemi Olanrewaju (Blu3 Sky) 
+#
+# Created: 14/08/26 
+#
+#
+# vist man page for modification any modification 
+# systemd.unit
+# systemd.service
+#
+[unit] 
+Description= Sound output Daemon 
+After=NetworkManager.service  pipewire.service wireplumber.service  bluetooth.service 
+Wants=pipewire.service wireplumber.service
+
+[Service]
+Type=exec 
+ExecStart=
+Restart=on-failure
+RestartSec=5s 
+Nice= 
+
+
+[Install]  
+WantedBy=multi-user.target
+
+
+
