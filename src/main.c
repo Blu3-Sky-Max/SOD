@@ -42,7 +42,8 @@ static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint
 		      case 
 			     SPA_PROP_monitorVolumes: { 
 				    uint32_t size; 
-				   spa_pod_get_array(&new_prop->value, &size);  
+				   spa_pod_get_array(&new_prop->value, &size);
+				   break;   
 		     } 
      } 
 
