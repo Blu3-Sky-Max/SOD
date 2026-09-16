@@ -52,14 +52,22 @@ static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint
 
 }
 
+} 
  /* [sode_node_event] .info */ 
 static void sod_node_info(void *user_data, const struct pw_node_info *info){ 
 
 
 	sod_info *data=user_data;
+ const char *node_name=spa_dict_lookup(info->props, "node.name");
+ const char *Media_class=spa_dict_lookup(info->props,"media.class");
 
-  fprintf(stdout,"Node id: %i\nNumber_of_input_port: %i\nNUmber_of_output_port: %i\nNode state:%s\n ", info -> id,\
-		  info -> n_input_ports,info ->n_output_ports, pw_node_state_as_string(info->state),  );   	  
+
+  fprintf(stdout,"Node id: %i\nNumber_of_input_port: %i\nNUmber_of_output_port: %i\nNode state:%s\nNode name:%s\nMedia class:%s\n ",\
+
+		  info -> id, info -> n_input_ports,info ->n_output_ports, pw_node_state_as_string(info->state),\
+		  node_name,Media_class);   	 
+
+ 
 
 
 
@@ -91,12 +99,28 @@ static const struct pw_node_events sod_node_event = {
 static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions, const char *type, uint32_t version,const struct spa_dict *props){ 
      sod_info *sod_data=user_data; 
      
-      if(sod_data -> sod_info != NULL) 
-	      return; 
+     
+      if(sod_data -> sod_node != NULL) 
+	      return;
+	      
+     /* get the properties media class and node name playing */ 
 
-       /* when call back hit the interface then it bind */ 
-      if (strcmp(type,PW_TYPE_INTERFACE_Node) == 0){
-	      sod_data -> sod_node=pw_registry_bind(sod_data -> sod.registry,id, type,PW_VERSION_NODE,0);
+     const char *Media_check=spa_dict_lookup(props,"media.class");
+     const char *Node_name=spa_dict_lookup(props,"node.name"); 
+ 
+
+       /* when call back hit the interface (pipewire:inferace:node) 
+	* and media_check is on real output device not dummy,  
+	* node name is one of the listed app playing music
+	*
+	* [then it bind] 
+	* 
+	*/ 
+
+      if ( strcmp(type,PW_TYPE_INTERFACE_Node) == 0 && Media_check != NULL && strcmp(Media_check, "Stream/Output/Audio") == 0  && \
+		    ( strcmp( Node_name,"Google Chrome") ==0 || strcmp(Node_name,"Firefox") ==0 )  && Node_name != NULL  ){
+
+	      sod_data -> sod_node=pw_registry_bind(sod_data -> sod_registry,id, type,PW_VERSION_NODE,0);
 	      
 	      
 	      
