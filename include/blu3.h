@@ -42,8 +42,10 @@ typedef struct{
 
 
 #include <stdio.h> 
-#include <stlib.h> 
-
+#include <stdlib.h> 
+#include <spa/debug/format.h> 
+#include <spa/param/props-types.h> 
+#include <spa/pod/iter.h> 
 
 
 
