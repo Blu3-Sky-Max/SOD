@@ -98,7 +98,7 @@ static const struct pw_node_events sod_node_event = {
 
 
 
-  /* [registry event func] + [info getting] */ 
+  /* [registry event func] + [info binding] */ 
 
 static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions, const char *type, uint32_t version,const struct spa_dict *props){ 
      sod_info *sod_data=user_data;
