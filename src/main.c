@@ -2,6 +2,10 @@
 #include "blu3.h"
 
 
+
+
+
+
      /* [sode_node_param] .info */
 static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint32_t next,const struct spa_pod *param){ 
 
@@ -56,8 +60,9 @@ static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint
  /* [sode_node_event] .info */ 
 static void sod_node_info(void *user_data, const struct pw_node_info *info){ 
 
+	 sod_info *data=user_data;
+if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS  && info->props ) { 
 
-	sod_info *data=user_data;
  const char *node_name=spa_dict_lookup(info->props, "node.name");
  const char *Media_class=spa_dict_lookup(info->props,"media.class");
 
@@ -69,8 +74,7 @@ static void sod_node_info(void *user_data, const struct pw_node_info *info){
 
  
 
-
-
+} 
 
 } 
 
@@ -97,17 +101,25 @@ static const struct pw_node_events sod_node_event = {
   /* [registry event func] + [info getting] */ 
 
 static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions, const char *type, uint32_t version,const struct spa_dict *props){ 
-     sod_info *sod_data=user_data; 
+     sod_info *sod_data=user_data;
+    _Bool App_match, already_tracked; 
      
-     
-      if(sod_data -> sod_node != NULL) 
-	      return;
+     if ( strcmp(type,PW_TYPE_INTERFACE_Node) == 0) { 
 	      
-     /* get the properties media class and node name playing */ 
 
      const char *Media_check=spa_dict_lookup(props,"media.class");
-     const char *Node_name=spa_dict_lookup(props,"node.name"); 
- 
+     const char *Node_name=spa_dict_lookup(props,"node.name");
+    
+    
+     App_match=already_tracked=FALSE;
+
+      for (int i=0; i< TRACK_APP_SIZE; i++)
+	       
+	     if ( Node_name != NULL && strcmp(Node_name, sod_track_app[i]) ==0){  
+		    App_match=TRUE;
+	    break; 
+      }  
+       
 
        /* when call back hit the interface (pipewire:inferace:node) 
 	* and media_check is on real output device not dummy,  
@@ -117,18 +129,43 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 	* 
 	*/ 
 
-      if ( strcmp(type,PW_TYPE_INTERFACE_Node) == 0 && Media_check != NULL && strcmp(Media_check, "Stream/Output/Audio") == 0  && \
-		    ( strcmp( Node_name,"Google Chrome") ==0 || strcmp(Node_name,"Firefox") ==0 )  && Node_name != NULL  ){
+      if ( Media_check != NULL && strcmp(Media_check, "Stream/Output/Audio") == 0  && \
+		   App_match !=FALSE  && Node_name != NULL  ){
 
-	      sod_data -> sod_node=pw_registry_bind(sod_data -> sod_registry,id, type,PW_VERSION_NODE,0);
+	      for(uint32_t i=0; i<TRACK_APP_SIZE; i++) 
+		      if ( sod_data->sod_node_tracker[i].id == id){ 
+			     already_tracked=TRUE;  
+			      break;
+		      } 
+
+	      if (already_tracked)
+		      return; 
+                   
+
+	      /* [created a node bind per each app] 
+	       * base on the app in conf.h  */ 
+
+
+  
+	      if (sod_data -> n_counter < TRACK_APP_SIZE) { 
+		      sod_app_handler *slot_ctrl= &sod_data->sod_node_tracker[sod_data -> n_counter++];
+
+
+
+			    slot_ctrl -> id=id;
+			    slot_ctrl -> name=Node_name; 
+			    slot_ctrl -> sod_node=pw_registry_bind(sod_data -> sod_registry,id, type,\
+					    PW_VERSION_NODE,0);
+			    slot_ctrl -> Version = version; 
 	      
 	      
 	      
-	      pw_node_add_listener(sod_data -> sod_node, &sod_data -> sod_node_hook, &sod_node_event, sod_data); 
+	      pw_node_add_listener((struct pw_node *)slot_ctrl -> sod_node, &slot_ctrl -> sod_node_hook, &sod_node_event, slot_ctrl);
+	      }  
       } 
 
 } 
-
+} 
 
 
  /* [registry event] */ 
@@ -153,6 +190,9 @@ int main(int __argc, char *__argv[]) {
 
 sod_info sod_data; 
  pw_init(&__argc, &__argv); 
+
+
+ spa_zero(sod_data); 
 
 sod_data. sod_loop=pw_main_loop_new(NULL); 
 sod_data.sod_context=pw_context_new(pw_main_loop_get_loop(sod_data.sod_loop),NULL,0);
