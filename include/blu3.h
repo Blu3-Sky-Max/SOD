@@ -1,7 +1,28 @@
-
+#include <conf.h> 
 #ifndef BLU3_SKY
 
 #define BLU3_SKY
+
+
+
+
+/* [EACH APP PROXY HANDLER] */
+
+typedef struct {
+
+        uint32_t  id;
+        struct pw_proxy *sod_node;      /* object */
+        struct spa_hook sod_node_hook; /* subscriber aka event handler */
+        const char *name;
+        uint32_t Version;
+
+
+}sod_app_handler;
+
+
+
+
+
 
 typedef struct{ 
 
@@ -10,24 +31,25 @@ typedef struct{
   struct pw_core    * sod_core;               /* proxy  */ 
   struct pw_registry * sod_registry; 
   struct spa_hook     sod_registry_listener;  /* subscriber track for registry */
-  struct pw_node    * sod_node;               /* object */ 
-  struct spa_hook   sod_node_hook;    
-
-
-
+  sod_app_handler sod_node_tracker[TRACK_APP_SIZE]; /* array of struct Sod_app_handler */ 
+  size_t n_counter; 
 
 
 
 } sod_info; 
+
+
+
+
+
+
+
+
 /*  [Operating modes] */ 
 
 #ifndef  _OPERATING_MODES 
 
 #define _OPERATING_MODES
-
-
-
-
 
 #define Library_Vol  80 
 #define Focus_Vol    45 
@@ -46,7 +68,6 @@ typedef struct{
 #include <spa/debug/format.h> 
 #include <spa/param/props-types.h> 
 #include <spa/pod/iter.h> 
-
 
 
 
