@@ -4,6 +4,66 @@
 
 
 
+   /* [debounce func] */ 
+static void db_s(void *data,uint64_t expirations ){ 
+   sod_app_handler *sod_db=data;
+  sod_db -> last_state = sod_db -> pending_state; 
+
+ fprintf(stdout,"Node id: %i\nNumber_of_input_port: %i\nNUmber_of_output_port: %i\nNode state:%s\nNode name:%s\nMedia class:%s\n ",\
+
+                  sod_db -> id, sod_db -> n_input_ports,sod_db ->n_output_ports,\
+		  pw_node_state_as_string(sod_db -> pending_state),sod_db -> Node_name, sod_db -> Media_class);
+
+
+
+
+} 
+
+
+ /*   [Emit/trigger when a node is been  removed] */ 
+
+static void sod_registry_remover(void *user_data, uint32_t id){
+
+
+
+	 sod_info *sod_remove_data=user_data;
+
+	for (size_t i=0; i< sod_remove_data -> n_counter; i++){ 
+	      sod_app_handler *remover= & sod_remove_data -> sod_node_tracker[i]; 
+
+              if (id == remover -> id){ 
+
+          if (remover -> db_timer != NULL )
+		 /* destory timer on set on the node */  
+		  pw_loop_destroy_source(remover -> sod_update_loop, remover ->db_timer);
+	   
+         spa_hook_remove(&remover -> sod_node_hook); 
+
+	 /* type cast, was passed to listener as pw_node */ 
+         pw_proxy_destroy((struct pw_proxy *)remover ->sod_node); 	 
+	 
+         
+
+	 /* resizing the n_counter and  swap last active node
+	  *  into the removed node , shrink count
+	  */ 
+
+	 size_t resize=sod_remove_data -> n_counter - 1; 
+
+	 if (i !=resize){ 
+
+		 sod_remove_data -> sod_node_tracker[i] = sod_remove_data -> sod_node_tracker[resize];
+	 } 
+		 sod_remove_data -> n_counter--; 
+		 break;  
+
+
+
+	      }
+
+	      } 
+
+} 
 
 
      /* [sode_node_param] .info */
@@ -60,23 +120,45 @@ static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint
  /* [sode_node_event] .info */ 
 static void sod_node_info(void *user_data, const struct pw_node_info *info){ 
 
-	 sod_info *data=user_data;
-if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS  && info->props ) { 
+	 sod_app_handler *data=user_data;
+
+	 
+
+if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS  && info->props != NULL ) { 
+
+	/* using state to prevent flooding 
+	 * prevent: suspend -> suspend -runing */ 
+
+	if ( info -> state != data -> pending_state){ 
+	      
+	       	data -> pending_state=info -> state; 
+             
+	       /* delopy the timer */ 	
+       		pw_loop_update_timer(data -> sod_update_loop, data -> db_timer, &debounce_time,NULL,FALSE);  
+               
+	}
+
+
 
  const char *node_name=spa_dict_lookup(info->props, "node.name");
  const char *Media_class=spa_dict_lookup(info->props,"media.class");
 
+  if (node_name)
+	 strncpy(data -> Node_name, node_name, sizeof(data -> Node_name)); 
+			if (Media_class)
+		strncpy(data ->Media_class,Media_class, sizeof(data->Media_class));
 
-  fprintf(stdout,"Node id: %i\nNumber_of_input_port: %i\nNUmber_of_output_port: %i\nNode state:%s\nNode name:%s\nMedia class:%s\n ",\
+		data->n_input_ports=info -> n_input_ports;	
+		
+		data -> n_output_ports=info -> n_output_ports; 
 
-		  info -> id, info -> n_input_ports,info ->n_output_ports, pw_node_state_as_string(info->state),\
-		  node_name,Media_class);   	 
 
+
+} 
  
-
 } 
 
-} 
+
 
 
 
@@ -156,7 +238,13 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 			    slot_ctrl -> name=Node_name; 
 			    slot_ctrl -> sod_node=pw_registry_bind(sod_data -> sod_registry,id, type,\
 					    PW_VERSION_NODE,0);
-			    slot_ctrl -> Version = version; 
+			    slot_ctrl -> Version = version;
+
+			    slot_ctrl -> sod_update_loop=sod_data -> sod_cached_loop; 
+			     
+			    /* add/set  timer per each node controling flooding */ 
+			    
+			   slot_ctrl -> db_timer=pw_loop_add_timer(sod_data->sod_cached_loop ,db_s, slot_ctrl);  
 	      
 	      
 	      
@@ -173,7 +261,11 @@ static const struct pw_registry_events  sod_registry_events = {
 
 	PW_VERSION_REGISTRY_EVENTS, 
 
-	.global=sod_registry_func, 
+	.global=sod_registry_func,
+
+	.global_remove=sod_registry_remover, 
+
+
 
 
 
@@ -194,7 +286,8 @@ sod_info sod_data;
 
  spa_zero(sod_data); 
 
-sod_data. sod_loop=pw_main_loop_new(NULL); 
+sod_data.sod_loop=pw_main_loop_new(NULL); 
+sod_data.sod_cached_loop=pw_main_loop_get_loop(sod_data.sod_loop); 
 sod_data.sod_context=pw_context_new(pw_main_loop_get_loop(sod_data.sod_loop),NULL,0);
 sod_data. sod_core=pw_context_connect(sod_data.sod_context,NULL,0); 
 
