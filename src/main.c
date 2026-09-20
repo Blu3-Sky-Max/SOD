@@ -7,12 +7,15 @@
    /* [debounce func] */ 
 static void db_s(void *data,uint64_t expirations ){ 
    sod_app_handler *sod_db=data;
-  sod_db -> last_state = sod_db -> pending_state; 
+
+  sod_db -> last_state = sod_db -> pending_state;
+
+
 
  fprintf(stdout,"Node id: %i\nNumber_of_input_port: %i\nNUmber_of_output_port: %i\nNode state:%s\nNode name:%s\nMedia class:%s\n ",\
 
                   sod_db -> id, sod_db -> n_input_ports,sod_db ->n_output_ports,\
-		  pw_node_state_as_string(sod_db -> pending_state),sod_db -> Node_name, sod_db -> Media_class);
+		  pw_node_state_as_string(sod_db -> last_state),sod_db -> Node_name, sod_db -> Media_class);
 
 
 
@@ -30,8 +33,10 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 
 	for (size_t i=0; i< sod_remove_data -> n_counter; i++){ 
 	      sod_app_handler *remover= & sod_remove_data -> sod_node_tracker[i]; 
-
-              if (id == remover -> id){ 
+              if (id == remover -> id){
+#ifdef DEBUG
+		     fprintf(stderr, "State id=%u %d -> %d\n", remover->id, remover->last_state, remover->pending_state);
+#endif 
 
           if (remover -> db_timer != NULL )
 		 /* destory timer on set on the node */  
@@ -54,14 +59,20 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 
 		 sod_remove_data -> sod_node_tracker[i] = sod_remove_data -> sod_node_tracker[resize];
 	 } 
-		 sod_remove_data -> n_counter--; 
-		 break;  
+		 sod_remove_data -> n_counter--;
 
+		/* turn the location to zero incase 
+		 * if user pause and play within 5
+		 * sec   
+		 */  
+
+            memset(remover, 0, sizeof(*remover));
+	     break;
 
 
 	      }
 
-	      } 
+	      }
 
 } 
 
@@ -126,17 +137,6 @@ static void sod_node_info(void *user_data, const struct pw_node_info *info){
 
 if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS  && info->props != NULL ) { 
 
-	/* using state to prevent flooding 
-	 * prevent: suspend -> suspend -runing */ 
-
-	if ( info -> state != data -> pending_state){ 
-	      
-	       	data -> pending_state=info -> state; 
-             
-	       /* delopy the timer */ 	
-       		pw_loop_update_timer(data -> sod_update_loop, data -> db_timer, &debounce_time,NULL,FALSE);  
-               
-	}
 
 
 
@@ -154,7 +154,22 @@ if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS  && info->props != NULL ) {
 
 
 
-} 
+}
+    /* check if call back change_mask is same as MASK_STATE
+     * PW_NODE_CHANGE_MASK_STATE  is (1 << 2) which is bitfied
+     * so if the call back is same as 0x4 and bitwise calculation
+     * return  0x4 same as (1 << 2)then it hit and add timer
+     *  to it */ 
+  if (info -> change_mask & PW_NODE_CHANGE_MASK_STATE) 
+	if ( info -> state != data -> pending_state){
+	       
+		data -> pending_state=info -> state;
+
+               /* delopy the timer to enter the last state */
+                pw_loop_update_timer(data -> sod_update_loop, data -> db_timer, &debounce_time,NULL,FALSE);
+
+        }
+
  
 } 
 
@@ -202,7 +217,6 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 	    break; 
       }  
        
-
        /* when call back hit the interface (pipewire:inferace:node) 
 	* and media_check is on real output device not dummy,  
 	* node name is one of the listed app playing music
@@ -235,7 +249,6 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 
 
 			    slot_ctrl -> id=id;
-			    slot_ctrl -> name=Node_name; 
 			    slot_ctrl -> sod_node=pw_registry_bind(sod_data -> sod_registry,id, type,\
 					    PW_VERSION_NODE,0);
 			    slot_ctrl -> Version = version;
@@ -244,7 +257,7 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 			     
 			    /* add/set  timer per each node controling flooding */ 
 			    
-			   slot_ctrl -> db_timer=pw_loop_add_timer(sod_data->sod_cached_loop ,db_s, slot_ctrl);  
+			   slot_ctrl -> db_timer=pw_loop_add_timer(slot_ctrl->sod_update_loop ,db_s, slot_ctrl);  
 	      
 	      
 	      
