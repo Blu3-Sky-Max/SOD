@@ -22,10 +22,9 @@ typedef struct {
         uint32_t  id;
         struct pw_proxy *sod_node;      /* object */
         struct spa_hook sod_node_hook; /* subscriber aka event handler */
-        const char *name;
         uint32_t Version;               /* node version */ 
 	enum pw_node_state last_state;
-        enum pw_node_state pending_state;  
+        enum pw_node_state pending_state;
         struct spa_source *db_timer;   /* timer for each node */ 
 	struct pw_loop  *sod_update_loop; 
 
@@ -55,7 +54,7 @@ typedef struct{
 
 struct timespec debounce_time = { 
 	.tv_sec=0,        /* sec */ 
-	.tv_nsec=500000000,      /* nano sec */  
+	.tv_nsec=300 * 1000 * 1000,      /* nano sec */  
 }; 
 
 
