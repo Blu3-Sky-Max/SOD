@@ -1,19 +1,20 @@
 
-#ifndef BLU3_SKY
+#ifndef BLU3_SKY__
 
-#define BLU3_SKY
+#define BLU3_SKY__ 
 
 
-
+#include <spa/utils/hook.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <spa/debug/format.h>
 #include <spa/param/props-types.h>
 #include <spa/pod/iter.h>
 #include <time.h>
-//#include <conf.h> 
+#include "conf.h" 
 #include "profile.h" 
-
+#include <spa/pod/iter.h>
+#include <pipewire/pipewire.h> 
 
 
 
@@ -38,15 +39,6 @@ typedef struct {
 }sod_app_handler;
 
 
-#ifdef __COLOR__
-
-#define RED "\033[1;31m" 
-#define RESET "\033[0m"
-#define GREEN "\033[1;32m" 
-#define CYAN  "\033[1;36"
-
-#endif 
-
 
 typedef struct{ 
 
@@ -58,17 +50,19 @@ typedef struct{
   sod_app_handler sod_node_tracker[TRACK_APP_SIZE]; /* array of struct Sod_app_handler */ 
   size_t n_counter; 
   struct pw_loop *sod_cached_loop;
-
+  bool	 T_mic_on; 
+  int 	 T_volume; 
 
 } sod_info; 
 
 
  /* debounce timer */ 
 
-struct timespec debounce_time = { 
-	.tv_sec=0,        /* sec */ 
-	.tv_nsec=300 * 1000 * 1000,      /* nano sec */  
-}; 
+extern struct timespec;  
+
+
+
+void  sod_apply_profile(const struct sod_profile *p , sod_info * data);
 
 
 
@@ -79,7 +73,4 @@ struct timespec debounce_time = {
 
 
 
-
-
-
-#endif         /* BLU3_SKY */ 
+#endif         /* BLU3_SKY__ */ 
