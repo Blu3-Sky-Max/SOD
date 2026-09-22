@@ -58,7 +58,7 @@ typedef struct{
 
  /* debounce timer */ 
 
-extern struct timespec;  
+extern struct timespec debounce_time;  
 
 
 
