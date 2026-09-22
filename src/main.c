@@ -1,10 +1,41 @@
-#include <pipewire/pipewire.h> 
 #include "blu3.h"
 
 
 /* 
 #define DEBUG
-*/ 
+*/
+
+/* [option] */
+struct option sod_option[] = {
+        {"profile",required_argument,NULL, 'p'},
+        {0},
+
+};
+
+
+/* show_case */
+const char  *show_case= RED"usage:"RESET "sod --profile <profile_modes>\n" \
+                          CYAN "\n<profile_modes>\n"RESET "     night  library gaming office meeting night\n";
+
+
+/* [debounce timer] */
+struct timespec debounce_time = {
+        .tv_sec=0,        /* sec */
+        .tv_nsec=300 * 1000 * 1000,      /* nano sec */
+
+
+                };
+
+
+/* [Apps tracking ] */
+const char *sod_track_app[] = {
+    "Google Chrome",
+    "Firefox",
+    "Boxes"
+};
+
+
+
 
    /* [debounce func] */ 
 static void db_s(void *data,uint64_t expirations ){ 
@@ -26,7 +57,7 @@ static void db_s(void *data,uint64_t expirations ){
 } 
 
 
- /*   [Emit/trigger when a node is been  removed] */ 
+ /*   [Emit/trigger when a node as been  removed] */ 
 
 static void sod_registry_remover(void *user_data, uint32_t id){
 
@@ -92,7 +123,7 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 } 
 
 
-     /* [sode_node_param] .info */
+/* [sode_node_param] .info */
 static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint32_t next,const struct spa_pod *param){ 
 
      sod_info *sod_data=data; 
@@ -255,9 +286,6 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 
 	      /* [created a node bind per each app] 
 	       * base on the app in conf.h  */ 
-
-
-  
 	      if (sod_data -> n_counter < TRACK_APP_SIZE) { 
 		      sod_app_handler *slot_ctrl= &sod_data->sod_node_tracker[sod_data -> n_counter++];
 
@@ -309,17 +337,46 @@ static const struct pw_registry_events  sod_registry_events = {
 int main(int __argc, char *__argv[]) { 
 
 sod_info sod_data; 
- pw_init(&__argc, &__argv); 
+ pw_init(NULL, NULL);
+
+ int char_c ,  Match_index= -1; 
+
+if  (__argc != 3 ){  
+       fprintf(stdout, show_case); 
+
+ 
+       exit(EXIT_FAILURE);        
+} 
+
+if ( (char_c=getopt_long(__argc,__argv,"p:", sod_option, NULL) ) !=-1)  
+
+	for (int i=0; i<N_PROFILE; i++)
+		if (strcmp(optarg,profiles[i].P_name)==0){ 
+
+			Match_index = i;
+		       break; 
+		} 	       
+
+ if (Match_index == -1) { 
+	fprintf(stdout,show_case);
+       
+	exit(19); 
+ }
+
 
 
  spa_zero(sod_data); 
+
+
+
+ sod_apply_profile(&profiles[Match_index] , &sod_data) ; 
 
 sod_data.sod_loop=pw_main_loop_new(NULL); 
 sod_data.sod_cached_loop=pw_main_loop_get_loop(sod_data.sod_loop); 
 sod_data.sod_context=pw_context_new(pw_main_loop_get_loop(sod_data.sod_loop),NULL,0);
 sod_data. sod_core=pw_context_connect(sod_data.sod_context,NULL,0); 
 
-/* verify if proxy is filed up */
+/* verify if proxy is allocated  */
 
  if (sod_data.sod_core == NULL){ 
    fprintf(stdout,"Core is not a proxy\n"); 
