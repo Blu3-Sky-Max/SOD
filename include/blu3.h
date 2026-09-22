@@ -1,12 +1,18 @@
 
-
-
-
-
-#include <conf.h> 
 #ifndef BLU3_SKY
 
 #define BLU3_SKY
+
+
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <spa/debug/format.h>
+#include <spa/param/props-types.h>
+#include <spa/pod/iter.h>
+#include <time.h>
+//#include <conf.h> 
+#include "profile.h" 
 
 
 
@@ -32,8 +38,14 @@ typedef struct {
 }sod_app_handler;
 
 
+#ifdef __COLOR__
 
+#define RED "\033[1;31m" 
+#define RESET "\033[0m"
+#define GREEN "\033[1;32m" 
+#define CYAN  "\033[1;36"
 
+#endif 
 
 
 typedef struct{ 
@@ -51,6 +63,7 @@ typedef struct{
 } sod_info; 
 
 
+ /* debounce timer */ 
 
 struct timespec debounce_time = { 
 	.tv_sec=0,        /* sec */ 
@@ -60,30 +73,6 @@ struct timespec debounce_time = {
 
 
 
-/*  [Operating modes] */ 
-
-#ifndef  _OPERATING_MODES 
-
-#define _OPERATING_MODES
-
-#define Library_Vol  80 
-#define Focus_Vol    45 
-#define Office_Vol   30
-#define Night_Vol    10
-#define Meeting_Vol  60 
-#define Gaming_Vol   90
-
-
-
-#endif /* OPERATING_MODES */ 
-
-
-#include <stdio.h> 
-#include <stdlib.h> 
-#include <spa/debug/format.h> 
-#include <spa/param/props-types.h> 
-#include <spa/pod/iter.h> 
-#include <time.h> 
 
 
 
