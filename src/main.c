@@ -2,7 +2,9 @@
 #include "blu3.h"
 
 
-
+/* 
+#define DEBUG
+*/ 
 
    /* [debounce func] */ 
 static void db_s(void *data,uint64_t expirations ){ 
@@ -10,8 +12,9 @@ static void db_s(void *data,uint64_t expirations ){
 
   sod_db -> last_state = sod_db -> pending_state;
 
-
-
+#ifdef DEBUG
+ fprintf(stdout,"Last_state: %d pending_state:%d\n",sod_db -> last_state, sod_db -> pending_state); 
+#endif
  fprintf(stdout,"Node id: %i\nNumber_of_input_port: %i\nNUmber_of_output_port: %i\nNode state:%s\nNode name:%s\nMedia class:%s\n ",\
 
                   sod_db -> id, sod_db -> n_input_ports,sod_db ->n_output_ports,\
@@ -37,7 +40,19 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 #ifdef DEBUG
 		     fprintf(stderr, "State id=%u %d -> %d\n", remover->id, remover->last_state, remover->pending_state);
 #endif 
+		     /* node (Boxes) running (3) ->(1) suspend to remove.
+		      * send a report back to reporter
+		      *
+		      * what happened is when you pause on boxes or 
+		      * remove the playing sound it ignite the remover
+		      * event from running instead of sending a callback 
+		      * 
+		      */  
+             if ( remover -> last_state == PW_NODE_STATE_RUNNING) { 
+		     remover -> pending_state=PW_NODE_STATE_SUSPENDED; 
 
+			     db_s(remover,1); 
+	     } 
           if (remover -> db_timer != NULL )
 		 /* destory timer on set on the node */  
 		  pw_loop_destroy_source(remover -> sod_update_loop, remover ->db_timer);
