@@ -8,7 +8,7 @@
 /* [option] */
 struct option sod_option[] = {
         {"profile",required_argument,NULL, 'p'},
-        {0},
+        {NULL}, 
 
 };
 
@@ -51,11 +51,13 @@ static void db_s(void *data,uint64_t expirations ){
                   sod_db -> id, sod_db -> n_input_ports,sod_db ->n_output_ports,\
 		  pw_node_state_as_string(sod_db -> last_state),sod_db -> Node_name, sod_db -> Media_class);
 
-
-
+    if (  sod_db -> pending_param){  
+    pw_node_enum_params((struct pw_node *)sod_db->sod_node, 0, SPA_PARAM_Props, 0, -1, NULL);
+    sod_db -> pending_param = FALSE;
+    }  
 
 } 
-
+ 
 
  /*   [Emit/trigger when a node as been  removed] */ 
 
@@ -126,7 +128,7 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 /* [sode_node_param] .info */
 static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint32_t next,const struct spa_pod *param){ 
 
-     sod_info *sod_data=data; 
+      //sod_app_handler *sod_data=data; 
 
 /* need some properties to get the volume and mute and unmute
  * passing the address of param to the properties here to get 
@@ -151,6 +153,7 @@ static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint
 				       float volume; 
 				       spa_pod_get_float( &new_prop -> value,&volume);
 				       fprintf(stdout,"Volume: %f\n", volume); 
+
 				       break; 
 			       }  
 		       case
@@ -196,11 +199,18 @@ if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS  && info->props != NULL ) {
 
 		data->n_input_ports=info -> n_input_ports;	
 		
-		data -> n_output_ports=info -> n_output_ports; 
+		data -> n_output_ports=info -> n_output_ports;
 
 
 
-}
+} 
+      /* sending request */ 
+  if ( info -> change_mask & PW_NODE_CHANGE_MASK_PARAMS ){ 
+	 data -> pending_param= TRUE; 
+	  pw_loop_update_timer(data -> sod_update_loop, data -> db_timer, &debounce_time,NULL,FALSE);
+
+  }  
+
     /* check if call back change_mask is same as MASK_STATE
      * PW_NODE_CHANGE_MASK_STATE  is (1 << 2) which is bitfied
      * so if the call back is same as 0x4 and bitwise calculation
@@ -214,7 +224,10 @@ if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS  && info->props != NULL ) {
                /* delopy the timer to enter the last state */
                 pw_loop_update_timer(data -> sod_update_loop, data -> db_timer, &debounce_time,NULL,FALSE);
 
-        }
+        } 
+
+
+
 
  
 } 
@@ -300,11 +313,15 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 			     
 			    /* add/set  timer per each node controling flooding */ 
 			    
-			   slot_ctrl -> db_timer=pw_loop_add_timer(slot_ctrl->sod_update_loop ,db_s, slot_ctrl);  
+			   slot_ctrl -> db_timer=pw_loop_add_timer(slot_ctrl->sod_update_loop ,db_s, slot_ctrl); 
+
+			  slot_ctrl -> parent = sod_data; 
 	      
 	      
 	      
 	      pw_node_add_listener((struct pw_node *)slot_ctrl -> sod_node, &slot_ctrl -> sod_node_hook, &sod_node_event, slot_ctrl);
+
+	       sod_set_volume(slot_ctrl, slot_ctrl-> parent ); 
 	      }  
       } 
 
