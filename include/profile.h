@@ -22,10 +22,10 @@
 
 #define Library_Vol  80 
 #define Focus_Vol    45 
-#define Office_Vol   30
+#define Office_Vol   60
 #define Night_Vol    10
 #define Meeting_Vol  60 
-#define Gaming_Vol   90
+#define Gaming_Vol   100
 
 
 
