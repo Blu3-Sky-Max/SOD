@@ -15,9 +15,10 @@
 #include "profile.h" 
 #include <spa/pod/iter.h>
 #include <pipewire/pipewire.h> 
+#include <spa/param/audio/format-utils.h>
 
 
-
+struct sod_info_s;
 /* [EACH APP PROXY HANDLER] */
 
 typedef struct {
@@ -33,14 +34,15 @@ typedef struct {
 	enum pw_node_state last_state;
         enum pw_node_state pending_state;
         struct spa_source *db_timer;   /* timer for each node */ 
-	struct pw_loop  *sod_update_loop; 
-
+	struct pw_loop  *sod_update_loop;
+        struct sod_info_s   *parent;	
+        bool pending_param; 
 
 }sod_app_handler;
 
 
 
-typedef struct{ 
+typedef struct sod_info_s{ 
 
   struct pw_main_loop * sod_loop;         /* event loop */  
   struct pw_context   * sod_context;        /* sod obj */ 
@@ -51,11 +53,13 @@ typedef struct{
   size_t n_counter; 
   struct pw_loop *sod_cached_loop;
   bool	 T_mic_on; 
-  int 	 T_volume; 
+  float   T_volume; 
+
 
 } sod_info; 
 
 
+#define  sod_print(...)  fprintf(stdout,__VA_ARGS__) 
  /* debounce timer */ 
 
 extern struct timespec debounce_time;  
@@ -65,7 +69,7 @@ extern struct timespec debounce_time;
 void  sod_apply_profile(const struct sod_profile *p , sod_info * data);
 
 
-
+void sod_set_volume(sod_app_handler *sod_data, sod_info *info );
 
 
 
