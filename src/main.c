@@ -20,7 +20,7 @@ const char  *show_case= RED"usage:"RESET "sod --profile <profile_modes>\n" \
 
 /* [debounce timer] */
 struct timespec debounce_time = {
-        .tv_sec=0,        /* sec */
+        .tv_sec=1,        /* sec */
         .tv_nsec=300 * 1000 * 1000,      /* nano sec */
 
 
@@ -176,7 +176,11 @@ static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint
 
 }
 
-} 
+}
+
+
+
+
  /* [sode_node_event] .info */ 
 static void sod_node_info(void *user_data, const struct pw_node_info *info){ 
 
@@ -201,15 +205,16 @@ if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS  && info->props != NULL ) {
 		
 		data -> n_output_ports=info -> n_output_ports;
 
+}
 
 
-} 
       /* sending request */ 
   if ( info -> change_mask & PW_NODE_CHANGE_MASK_PARAMS ){ 
 	 data -> pending_param= TRUE; 
 	  pw_loop_update_timer(data -> sod_update_loop, data -> db_timer, &debounce_time,NULL,FALSE);
 
-  }  
+  } 
+
 
     /* check if call back change_mask is same as MASK_STATE
      * PW_NODE_CHANGE_MASK_STATE  is (1 << 2) which is bitfied
@@ -221,15 +226,29 @@ if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS  && info->props != NULL ) {
 	       
 		data -> pending_state=info -> state;
 
-               /* delopy the timer to enter the last state */
+               /* delay the timer to enter the last state */
                 pw_loop_update_timer(data -> sod_update_loop, data -> db_timer, &debounce_time,NULL,FALSE);
+	       
+	         if (info -> state ==  PW_NODE_STATE_RUNNING ) 
+		for (size_t i=0; i < data -> parent-> n_counter; i++){ 
 
-        } 
+                      sod_app_handler *ctrl_mt = &data-> parent -> sod_node_tracker[i]; 
+
+		      if ( ctrl_mt -> id == data -> id ) 
+			      continue; 
+
+
+		      if ( ctrl_mt -> last_state == PW_NODE_STATE_RUNNING ){
+
+			     sod_mute_node(ctrl_mt, TRUE);
+			   ctrl_mt ->  sod_auto_mt=TRUE; 
+		      } 
+		}   
 
 
 
 
- 
+		} 
 } 
 
 
@@ -317,7 +336,7 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 
 			  slot_ctrl -> parent = sod_data; 
 	      
-	      
+	                 slot_ctrl -> sod_auto_mt=FALSE;       
 	      
 	      pw_node_add_listener((struct pw_node *)slot_ctrl -> sod_node, &slot_ctrl -> sod_node_hook, &sod_node_event, slot_ctrl);
 
@@ -420,4 +439,4 @@ pw_main_loop_run(sod_data.sod_loop);
 
 
 
-} 
+}  
