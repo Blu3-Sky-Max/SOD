@@ -5,6 +5,42 @@
 #define DEBUG
 */
 
+
+
+static void sod_unmuted_auto_mt( sod_info *restore_mt){ 
+
+	 /* [check if  non-auto-muted node is still running] */ 
+  
+	 for (size_t i =0; i < restore_mt ->  n_counter; i++) { 
+		 sod_app_handler * chek = & restore_mt -> sod_node_tracker [i]; 
+		  if ( ! chek -> sod_auto_mt &&  chek -> last_state == PW_NODE_STATE_RUNNING ) 
+			  return; 
+	 }  /* [ end check non_auto_muted ] */ 
+
+
+	 /* [check if auto_muted is available ] */ 
+
+	 for ( size_t i=0; i< restore_mt -> n_counter; i++){ 
+
+		 sod_app_handler * chek =& restore_mt ->   sod_node_tracker [i];
+		 if ( chek -> sod_auto_mt){ 
+			  sod_mute_node(chek, FALSE);
+			  chek -> sod_auto_mt = FALSE;
+			 break;  
+
+		 } 
+
+
+
+
+	 } 
+
+
+
+
+
+} 
+
 /* [option] */
 struct option sod_option[] = {
         {"profile",required_argument,NULL, 'p'},
@@ -20,8 +56,8 @@ const char  *show_case= RED"usage:"RESET "sod --profile <profile_modes>\n" \
 
 /* [debounce timer] */
 struct timespec debounce_time = {
-        .tv_sec=1,        /* sec */
-        .tv_nsec=300 * 1000 * 1000,      /* nano sec */
+        .tv_sec=0,        /* sec */
+        .tv_nsec=500 * 1000 * 1000,      /* nano sec */
 
 
                 };
@@ -41,24 +77,38 @@ const char *sod_track_app[] = {
 static void db_s(void *data,uint64_t expirations ){ 
    sod_app_handler *sod_db=data;
 
-  sod_db -> last_state = sod_db -> pending_state;
 
+      if ( sod_db -> last_state != sod_db -> pending_state){ 
+	      sod_db -> last_state = sod_db -> pending_state;
+    
+
+ 
 #ifdef DEBUG
  fprintf(stdout,"Last_state: %d pending_state:%d\n",sod_db -> last_state, sod_db -> pending_state); 
 #endif
- fprintf(stdout,"Node id: %i\nNumber_of_input_port: %i\nNUmber_of_output_port: %i\nNode state:%s\nNode name:%s\nMedia class:%s\n ",\
+ fprintf(stdout,"Node id: %i\nNumber_of_input_port: %i\nNUmber_of_output_port: %i\nNode state:%s\nNode name:%s\nMedia class:%s\n",\
 
                   sod_db -> id, sod_db -> n_input_ports,sod_db ->n_output_ports,\
+
 		  pw_node_state_as_string(sod_db -> last_state),sod_db -> Node_name, sod_db -> Media_class);
 
-    if (  sod_db -> pending_param){  
-    pw_node_enum_params((struct pw_node *)sod_db->sod_node, 0, SPA_PARAM_Props, 0, -1, NULL);
-    sod_db -> pending_param = FALSE;
-    }  
+               
+             if ( sod_db -> last_state != PW_NODE_STATE_RUNNING) 
+		     sod_unmuted_auto_mt(sod_db -> parent); 
+      }
+      
+      
+      
+      
+      
+      if (  sod_db -> pending_param){  
+	      pw_node_enum_params((struct pw_node *)sod_db->sod_node, 0, SPA_PARAM_Props, 0, -1, NULL);
+	      sod_db -> pending_param = FALSE;
+      }  
 
 } 
  
-
+ 
  /*   [Emit/trigger when a node as been  removed] */ 
 
 static void sod_registry_remover(void *user_data, uint32_t id){
@@ -70,6 +120,7 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 	for (size_t i=0; i< sod_remove_data -> n_counter; i++){ 
 	      sod_app_handler *remover= & sod_remove_data -> sod_node_tracker[i]; 
               if (id == remover -> id){
+
 #ifdef DEBUG
 		     fprintf(stderr, "State id=%u %d -> %d\n", remover->id, remover->last_state, remover->pending_state);
 #endif 
@@ -85,8 +136,15 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 		     remover -> pending_state=PW_NODE_STATE_SUSPENDED; 
 
 			     db_s(remover,1); 
-	     } 
-          if (remover -> db_timer != NULL )
+	     }
+              
+	      if ( remover ->  sod_auto_mt)
+                      sod_mute_node( remover, FALSE);
+                       
+
+
+
+          if (remover -> db_timer != NULL)
 		 /* destory timer on set on the node */  
 		  pw_loop_destroy_source(remover -> sod_update_loop, remover ->db_timer);
 	   
@@ -128,7 +186,7 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 /* [sode_node_param] .info */
 static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint32_t next,const struct spa_pod *param){ 
 
-      //sod_app_handler *sod_data=data; 
+      sod_app_handler *sod_data=data; 
 
 /* need some properties to get the volume and mute and unmute
  * passing the address of param to the properties here to get 
@@ -152,7 +210,7 @@ static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint
 			       SPA_PROP_volume: { 
 				       float volume; 
 				       spa_pod_get_float( &new_prop -> value,&volume);
-				       fprintf(stdout,"Volume: %f\n", volume); 
+				       fprintf(stdout,"Volume: %f ID: %i\n", volume,  sod_data -> id); 
 
 				       break; 
 			       }  
@@ -160,7 +218,7 @@ static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint
 			      SPA_PROP_mute: { 
 				     bool mute; 
 				     spa_pod_get_bool(&new_prop->value , &mute); 
-				     fprintf(stdout, "Mute:%s\n",mute ? "true" : "false"); 
+				     fprintf(stdout, "Mute:%s\n\n",mute ? "true" : "false"); 
 				     break; 
 			      }
 		      case 
@@ -207,13 +265,12 @@ if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS  && info->props != NULL ) {
 
 }
 
-
-      /* sending request */ 
+      /*[sending request for param changed info] */ 
   if ( info -> change_mask & PW_NODE_CHANGE_MASK_PARAMS ){ 
 	 data -> pending_param= TRUE; 
 	  pw_loop_update_timer(data -> sod_update_loop, data -> db_timer, &debounce_time,NULL,FALSE);
 
-  } 
+  }   
 
 
     /* check if call back change_mask is same as MASK_STATE
@@ -232,6 +289,9 @@ if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS  && info->props != NULL ) {
 	         if (info -> state ==  PW_NODE_STATE_RUNNING ) 
 		for (size_t i=0; i < data -> parent-> n_counter; i++){ 
 
+			if ( data -> parent -> sod_node_tracker[i].sod_auto_mt == TRUE ) 
+				continue;
+                              
                       sod_app_handler *ctrl_mt = &data-> parent -> sod_node_tracker[i]; 
 
 		      if ( ctrl_mt -> id == data -> id ) 
@@ -336,11 +396,13 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 
 			  slot_ctrl -> parent = sod_data; 
 	      
-	                 slot_ctrl -> sod_auto_mt=FALSE;       
+	                 slot_ctrl -> sod_auto_mt=FALSE;
+
+                    /* [set param per node ] */ 
+		   sod_set_volume(slot_ctrl, slot_ctrl-> parent );
 	      
 	      pw_node_add_listener((struct pw_node *)slot_ctrl -> sod_node, &slot_ctrl -> sod_node_hook, &sod_node_event, slot_ctrl);
 
-	       sod_set_volume(slot_ctrl, slot_ctrl-> parent ); 
 	      }  
       } 
 
@@ -439,4 +501,4 @@ pw_main_loop_run(sod_data.sod_loop);
 
 
 
-}  
+} 
