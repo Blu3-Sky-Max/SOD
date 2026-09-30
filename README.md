@@ -1,85 +1,159 @@
-<h1 align="center">🎓 Computer Engineering</h1>
+# SOD — Sound Output Daemon
 
-<p align="center">
-<b>Systems Engineer</b> | <b>RHCSA Certified</b> | <b>Linux Power User</b>
-</p>
+A Linux daemon written in C that watches the PipeWire audio graph, applies a volume profile to app audio streams, and automatically mutes and unmutes apps so only one plays at a time.
 
-<p align="center">
-<img src="https://img.shields.io/badge/STATUS-NERD_%26_JACKED-2ea44f?style=for-the-badge" />
-<img src="https://img.shields.io/badge/RHCSA-CERTIFIED-EE0000?style=for-the-badge&logo=redhat&logoColor=white" />
-<img src="https://img.shields.io/badge/HARDWARE-FRAMEWORK_13-0091FF?style=for-the-badge" />
-</p>
+**Author:** Usman O. Olanrewaju  
+**Language:** C  
+**License:** GPL-3.0  
+**Platform:** Linux (PipeWire + systemd)  
+**Last updated:** 2026/09/30
 
 ---
 
-## 👋 About Me
+## Table of Contents
 
-I'm a 3rd-year **Computer Engineering** student and a Linux systems engineer. I bridge hardware and software by combining **C/C++ development** with enterprise-grade **Linux systems administration**. I don't just run commands — I read the man pages, break things on purpose, and rebuild them until I understand every line.
-
-**RHCSA Certified (RHEL 10)** — scored 237/300, validating hands-on skills in LVM, SELinux, NFS/AutoFS, firewalld, systemd, and enterprise Linux administration.
-
-Currently deep in systems programming — working through *Programming in C* (Kochan) and GDB debugging as deliberate groundwork for a private PipeWire-based audio daemon project.
-
----
-
-## 🛠️ Technical Stack
-
-**Programming Languages**
-
-<p align="left">
-<img src="https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white" />
-<img src="https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" />
-<img src="https://img.shields.io/badge/Bash-4EAA25?style=for-the-badge&logo=gnu-bash&logoColor=white" />
-</p>
-
-**Systems & Tools**
-
-<p align="left">
-<img src="https://img.shields.io/badge/Fedora-51A2DA?style=for-the-badge&logo=fedora&logoColor=white" />
-<img src="https://img.shields.io/badge/RHEL-EE0000?style=for-the-badge&logo=redhat&logoColor=white" />
-<img src="https://img.shields.io/badge/Rocky_Linux-10B981?style=for-the-badge&logo=rockylinux&logoColor=white" />
-<img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white" />
-<img src="https://img.shields.io/badge/Vim-019733?style=for-the-badge&logo=vim&logoColor=white" />
-<img src="https://img.shields.io/badge/systemd-white?style=for-the-badge&logo=linux&logoColor=black" />
-</p>
-
-**Security Auditing**
-
-<p align="left">
-<img src="https://img.shields.io/badge/Nmap-grey?style=for-the-badge" />
-<img src="https://img.shields.io/badge/Wireshark-1679A7?style=for-the-badge&logo=wireshark&logoColor=white" />
-</p>
+1. [Overview](#1-overview)
+2. [Features](#2-features)
+3. [Profiles](#3-profiles)
+4. [How It Works](#4-how-it-works)
+5. [Dependencies](#5-dependencies)
+6. [Build & Installation](#6-build--installation)
+7. [Usage](#7-usage)
+8. [Known Limitations](#8-known-limitations)
+9. [Roadmap](#9-roadmap)
+10. [License](#10-license)
 
 ---
 
-## 📜 Certifications
+## 1. Overview
 
-- 🎖️ **Red Hat Certified System Administrator (RHCSA)** — RHEL 10 — Score: 237/300 — 2026
+SOD connects to PipeWire through its native C API, tracks the audio streams of selected applications, and controls them per app. It has no GUI. You pick a profile, and SOD keeps the session in order while it runs.
 
----
-
-## 🚀 Currently Building
-
-<img src="https://img.shields.io/badge/dskd-shipped-2ea44f?style=for-the-badge" />
-<img src="https://img.shields.io/badge/SOD-private_%2F_in_progress-yellow?style=for-the-badge" />
-<img src="https://img.shields.io/badge/Erasmus%2B-traineeship_search-blue?style=for-the-badge" />
-
-- **dskd** — a filesystem monitoring daemon shipped as a systemd service, running in production on Rocky Linux.
-- **SOD (Sound Output Daemon)** — a PipeWire-based audio daemon in C. Kept private until I can explain every line myself.
-- Pursuing an **Erasmus+ KA131 traineeship** across Poland, the Netherlands, and Portugal for Summer 2027.
+> **Note:** Earlier versions of SOD set volume from wired-headphone events through `wpctl`. That design has been replaced. SOD now talks to PipeWire directly and works per application stream.
 
 ---
 
-## 🧪 Active Laboratories
+## 2. Features
 
-- 🐧 [Linux-Admin-RHCSA](https://github.com/Blu3-Sky-Max/Linux-Admin-RHCSA) — Hands-on RHCSA labs: LVM, SELinux, NFS/AutoFS, firewall, OpenSSH, and more.
-- 🛰️ [dskd](https://github.com/Blu3-Sky-Max/dskd) — Filesystem monitoring daemon, systemd-integrated.
-- 💤 [Linux-Hibernate-Resume](https://github.com/Blu3-Sky-Max/Linux-Hibernate-Resume) — Swap-based hibernation setup, GRUB2 resume params, dracut/initramfs.
-- 🧵 [Systems-Programming-Lab](https://github.com/Blu3-Sky-Max/Systems-Programming-Lab) — C fundamentals and systems programming practice.
-- 🗄️ Database-Administration — SQLite3 & PostgreSQL, including embedded SQL with ecpg/libpq.
+- **Profiles:** `sod --profile <name>` sets a target volume for tracked app streams.
+- **Auto mute/unmute (ducking):** when a tracked app starts playing, other playing tracked apps are muted. When the newest app stops, apps that SOD muted are unmuted again. Mutes you make yourself are left alone.
+- **Newest wins:** starting playback in Chrome while Firefox is playing mutes Firefox and leaves Chrome audible.
+- **Tracked apps:** Google Chrome, Firefox and GNOME Boxes, held in a `tracked_apps[]` list.
+- **Dynamic node tracking:** streams are discovered as they appear in the PipeWire registry and cleaned up when they disappear. This covers apps that create a new stream each time playback restarts.
+- **State debouncing:** PipeWire nodes flicker between running and idle during normal playback. SOD settles each node's state with a per-node timer before it acts.
+- **Log file:** initial logging support (`include/Log.h`).
 
 ---
 
-<p align="center">
-<a href="https://linkedin.com/in/usman-olanrewaju"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" /></a>
-</p>
+## 3. Profiles
+
+| Profile   | Volume |
+|-----------|--------|
+| `night`   | 10%    |
+| `office`  | 30%    |
+| `focus`   | 45%    |
+| `meeting` | 60%    |
+| `library` | 80%    |
+| `gaming`  | 100%   |
+
+Profile values are defined in `include/blu3.h`.
+
+> **Note:** Profiles also carry a microphone setting. Microphone control is not applied yet. See the [Roadmap](#9-roadmap).
+
+---
+
+## 4. How It Works
+
+1. SOD connects to PipeWire and listens on the registry for new global objects.
+2. Each new node is checked against `media.class == "Stream/Output/Audio"` and the `tracked_apps[]` list.
+3. A matching node is bound and given a listener. SOD reads its current `Props` (volume, mute) and applies the profile volume once at bind time.
+4. Node state changes go through a per-node debounce timer on PipeWire's own event loop. When a state settles, SOD decides whether to duck other nodes or restore them.
+5. Muting uses `pw_node_set_param()` with a mute-only `Props` pod (`sod_mute.c`). PipeWire has no generic pause, so "pause" means mute.
+6. When a node is removed, SOD destroys its timer and listener, frees the slot, and keeps the tracker array packed.
+
+The read path (`sod_node_param`) is strictly read-only. All writes go through dedicated functions, which avoids feedback loops between the parameter callback and PipeWire.
+
+### Project layout
+
+```
+SOD/
+├── src/            # daemon, profile and mute logic (sod_profile.c, sod_mute.c, ...)
+├── include/
+│   ├── blu3.h      # profiles, structs, shared declarations
+│   └── Log.h       # log file support
+├── systemd/        # systemd unit file
+├── Makefile
+├── LICENSE
+└── README.md
+```
+
+---
+
+## 5. Dependencies
+
+| Package | Purpose |
+|---------|---------|
+| `pipewire` | Audio server |
+| `pipewire-devel` (`libpipewire-0.3-dev` on Debian/Ubuntu) | PipeWire C API headers |
+| `systemd` | User service management |
+| `gcc`, `make` | Build toolchain |
+
+---
+
+## 6. Build & Installation
+
+```bash
+$ git clone https://github.com/Blu3-Sky-Max/SOD.git
+$ cd SOD
+$ make
+$ sudo make install
+```
+
+To remove:
+
+```bash
+$ sudo make uninstall
+```
+
+---
+
+## 7. Usage
+
+Run SOD with a profile:
+
+```bash
+$ sod --profile night
+$ sod --profile focus
+$ sod --profile gaming
+```
+
+Once it is running, play audio in Chrome, Firefox or Boxes. Starting a second app mutes the first, and the first is unmuted when the second stops.
+
+---
+
+## 8. Known Limitations
+
+- **Tracker capacity:** SOD tracks a fixed number of nodes at once (currently 3). When the tracker is full, additional nodes are dropped, and muting breaks with 3 or more simultaneously muted nodes.
+- **Volume target:** profile volume is applied to each app's stream, not to the system sink. The desktop's master volume slider does not move when a profile is applied.
+- **Profile settings not yet applied:** microphone, echo cancellation and noise cancellation are defined in the profile specs but not implemented.
+- **Tracked apps are hard-coded:** adding an app means editing `tracked_apps[]` and rebuilding.
+
+---
+
+## 9. Roadmap
+
+- [x] Profile selection (`--profile`) with volume applied at node bind
+- [x] Per-app mute and unmute with newest-wins ducking
+- [x] Dynamic node tracking and cleanup
+- [ ] Raise or replace the tracker capacity limit
+- [ ] Sink and source control, including the microphone
+- [ ] Full log file output
+- [ ] Audio routing
+- [ ] DSP (PipeWire echo-cancel module, noise cancellation)
+
+---
+
+## 10. License
+
+GPL-3.0 — see [LICENSE](./LICENSE).  
+Copyright (c) 2025 Usman O. Olanrewaju
