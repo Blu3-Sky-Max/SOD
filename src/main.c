@@ -5,7 +5,30 @@
 #define DEBUG
 */
 
+static void sod_newest_node(sod_app_handler  *running) {
 
+	sod_info *newest_node= running -> parent; 
+
+	if ( running -> sod_auto_mt == TRUE  || running -> sod_auto_mt == FALSE ){ 
+		sod_mute_node(running, newest_node ->  T_mic_on); 
+		running -> sod_auto_mt = newest_node -> T_mic_on; 
+	} 
+
+	 /* mute every other tracked node that is still running */
+	for ( size_t i=0; i< newest_node -> n_counter; i++){ 
+             sod_app_handler *other = newest_node -> sod_node_tracker[i]; 
+
+	     if(other == running) 
+		     continue; 
+
+	     if ( other -> last_state == PW_NODE_STATE_RUNNING && !other -> sod_auto_mt){ 
+		     sod_mute_node(other, TRUE);
+		      other -> sod_auto_mt = TRUE; 
+	     } 
+
+	} 
+
+} 
 
 static void sod_unmuted_auto_mt( sod_info *restore_mt){ 
 
@@ -95,7 +118,10 @@ static void db_s(void *data,uint64_t expirations ){
 		  pw_node_state_as_string(sod_db -> last_state),sod_db -> Node_name, sod_db -> Media_class);
 
                
-             if ( sod_db -> last_state != PW_NODE_STATE_RUNNING) 
+             if ( sod_db -> last_state == PW_NODE_STATE_RUNNING)
+		     sod_newest_node(sod_db); 
+	     else 
+
 		     sod_unmuted_auto_mt(sod_db -> parent); 
       }
       
@@ -144,8 +170,6 @@ static void sod_registry_remover(void *user_data, uint32_t id){
                       sod_mute_node( remover, FALSE);
                        
 
-
-
           if (remover -> db_timer != NULL)
 		 /* destory timer on set on the node */  
 		  pw_loop_destroy_source(remover -> sod_update_loop, remover ->db_timer);
@@ -175,6 +199,8 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 		 */  
 
             memset(remover, 0, sizeof(*remover));
+
+	     free (remover); 
 	     break;
 
 
@@ -190,9 +216,9 @@ static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint
 
       sod_app_handler *sod_data=data; 
 
-/* need some properties to get the volume and mute and unmute
+/* need some properties to get the volume and mute and unmute status
  * passing the address of param to the properties here to get 
- * the object needed  
+ * the info of each node   
  */ 
   
      struct spa_pod_prop *new_prop; 
@@ -384,7 +410,7 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 
 		    Old_T_C= sod_data -> Track_Capacity; 
 
-		    New_T_C= sod_data -> Track_Capacity * 5; 
+		    New_T_C= sod_data -> Track_Capacity * 3; 
 
 		    sod_app_handler **pass_new_stg= realloc( sod_data -> sod_node_tracker, New_T_C * sizeof(sod_app_handler) );
 
@@ -392,7 +418,9 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 			   fprintf(stdout,RED"Couldn't Reallocated A New Size\n"RESET); 
 			  exit(21); 
 		    }
-
+                  /* realloc keeps the existing pointers but leaves the newly added
+		   *  slots uninitialized, so zero only the new part [Old_T_C, New_T_C]    
+		   */
 		   memset(pass_new_stg + Old_T_C, 0 , (New_T_C - Old_T_C) * sizeof(sod_app_handler *));   
 
 
