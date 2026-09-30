@@ -1,81 +1,85 @@
-# SOD — Sound Output Daemon
+<h1 align="center">🎓 Computer Engineering</h1>
 
-A Linux daemon written in C that automatically adjusts audio volume based on mood presets when wired headphones are detected.
+<p align="center">
+<b>Systems Engineer</b> | <b>RHCSA Certified</b> | <b>Linux Power User</b>
+</p>
 
----
-
-## Overview
-
-SOD listens for wired headphone plug events and sets the system volume through PipeWire to a predefined mood level. No GUI, no config files at runtime — plug in, volume is set, done.
-
-**Author:** Usman O. Olanrewaju  
-**Language:** C  
-**License:** MIT  
-**Platform:** Linux (PipeWire + systemd)
+<p align="center">
+<img src="https://img.shields.io/badge/STATUS-NERD_%26_JACKED-2ea44f?style=for-the-badge" />
+<img src="https://img.shields.io/badge/RHCSA-CERTIFIED-EE0000?style=for-the-badge&logo=redhat&logoColor=white" />
+<img src="https://img.shields.io/badge/HARDWARE-FRAMEWORK_13-0091FF?style=for-the-badge" />
+</p>
 
 ---
 
-## Mood Presets
+## 👋 About Me
 
-| Mood   | Volume |
-|--------|--------|
-| normal | 50%    |
-| happy  | 60%    |
-| sad    | 85%    |
+I'm a 3rd-year **Computer Engineering** student and a Linux systems engineer. I bridge hardware and software by combining **C/C++ development** with enterprise-grade **Linux systems administration**. I don't just run commands — I read the man pages, break things on purpose, and rebuild them until I understand every line.
 
----
+**RHCSA Certified (RHEL 10)** — scored 237/300, validating hands-on skills in LVM, SELinux, NFS/AutoFS, firewalld, systemd, and enterprise Linux administration.
 
-## How It Works
-
-SOD detects wired headphone connection events, reads the active mood preset, then applies the corresponding volume via `wpctl`.
-
-The non-obvious part: `wpctl` is a user-session service communicating over D-Bus. Running it as root fails — root has no PipeWire session. SOD resolves this by detecting the active user session via `loginctl`, extracting the correct `DBUS_SESSION_BUS_ADDRESS`, and invoking `wpctl` through `runuser` with the session environment injected.
+Currently deep in systems programming — working through *Programming in C* (Kochan) and GDB debugging as deliberate groundwork for a private PipeWire-based audio daemon project.
 
 ---
 
-## Dependencies
+## 🛠️ Technical Stack
 
-| Package | Purpose |
-|---------|---------|
-| `pipewire` | Audio server |
-| `wireplumber` | PipeWire session manager — provides `wpctl` |
-| `systemd` | Session detection via `loginctl` |
-| `gcc`, `make` | Build toolchain |
+**Programming Languages**
 
----
+<p align="left">
+<img src="https://img.shields.io/badge/C-00599C?style=for-the-badge&logo=c&logoColor=white" />
+<img src="https://img.shields.io/badge/C++-00599C?style=for-the-badge&logo=c%2B%2B&logoColor=white" />
+<img src="https://img.shields.io/badge/Bash-4EAA25?style=for-the-badge&logo=gnu-bash&logoColor=white" />
+</p>
 
-## Build & Installation
+**Systems & Tools**
 
-```bash
-$ git clone https://github.com/Blu3-Sky-Max/SOD.git
-$ cd SOD
-$ make
-$ sudo make install
-```
+<p align="left">
+<img src="https://img.shields.io/badge/Fedora-51A2DA?style=for-the-badge&logo=fedora&logoColor=white" />
+<img src="https://img.shields.io/badge/RHEL-EE0000?style=for-the-badge&logo=redhat&logoColor=white" />
+<img src="https://img.shields.io/badge/Rocky_Linux-10B981?style=for-the-badge&logo=rockylinux&logoColor=white" />
+<img src="https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white" />
+<img src="https://img.shields.io/badge/Vim-019733?style=for-the-badge&logo=vim&logoColor=white" />
+<img src="https://img.shields.io/badge/systemd-white?style=for-the-badge&logo=linux&logoColor=black" />
+</p>
 
-To remove:
+**Security Auditing**
 
-```bash
-$ sudo make uninstall
-```
-
----
-
-## Usage
-
-Set the mood before plugging in:
-
-```bash
-$ sod --mood normal
-$ sod --mood happy
-$ sod --mood sad
-```
-
-SOD applies the active preset on the next headphone event.
+<p align="left">
+<img src="https://img.shields.io/badge/Nmap-grey?style=for-the-badge" />
+<img src="https://img.shields.io/badge/Wireshark-1679A7?style=for-the-badge&logo=wireshark&logoColor=white" />
+</p>
 
 ---
 
-## License
+## 📜 Certifications
 
-MIT — see [LICENSE](./LICENSE).  
-Copyright (c) 2025 Usman O. Olanrewaju
+- 🎖️ **Red Hat Certified System Administrator (RHCSA)** — RHEL 10 — Score: 237/300 — 2026
+
+---
+
+## 🚀 Currently Building
+
+<img src="https://img.shields.io/badge/dskd-shipped-2ea44f?style=for-the-badge" />
+<img src="https://img.shields.io/badge/SOD-private_%2F_in_progress-yellow?style=for-the-badge" />
+<img src="https://img.shields.io/badge/Erasmus%2B-traineeship_search-blue?style=for-the-badge" />
+
+- **dskd** — a filesystem monitoring daemon shipped as a systemd service, running in production on Rocky Linux.
+- **SOD (Sound Output Daemon)** — a PipeWire-based audio daemon in C. Kept private until I can explain every line myself.
+- Pursuing an **Erasmus+ KA131 traineeship** across Poland, the Netherlands, and Portugal for Summer 2027.
+
+---
+
+## 🧪 Active Laboratories
+
+- 🐧 [Linux-Admin-RHCSA](https://github.com/Blu3-Sky-Max/Linux-Admin-RHCSA) — Hands-on RHCSA labs: LVM, SELinux, NFS/AutoFS, firewall, OpenSSH, and more.
+- 🛰️ [dskd](https://github.com/Blu3-Sky-Max/dskd) — Filesystem monitoring daemon, systemd-integrated.
+- 💤 [Linux-Hibernate-Resume](https://github.com/Blu3-Sky-Max/Linux-Hibernate-Resume) — Swap-based hibernation setup, GRUB2 resume params, dracut/initramfs.
+- 🧵 [Systems-Programming-Lab](https://github.com/Blu3-Sky-Max/Systems-Programming-Lab) — C fundamentals and systems programming practice.
+- 🗄️ Database-Administration — SQLite3 & PostgreSQL, including embedded SQL with ecpg/libpq.
+
+---
+
+<p align="center">
+<a href="https://linkedin.com/in/usman-olanrewaju"><img src="https://img.shields.io/badge/LinkedIn-0077B5?style=for-the-badge&logo=linkedin&logoColor=white" /></a>
+</p>
