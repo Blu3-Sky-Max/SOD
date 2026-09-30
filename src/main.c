@@ -12,7 +12,7 @@ static void sod_unmuted_auto_mt( sod_info *restore_mt){
 	 /* [check if  non-auto-muted node is still running] */ 
   
 	 for (size_t i =0; i < restore_mt ->  n_counter; i++) { 
-		 sod_app_handler * chek = & restore_mt -> sod_node_tracker [i]; 
+		 sod_app_handler * chek = restore_mt -> sod_node_tracker [i]; 
 		  if ( ! chek -> sod_auto_mt &&  chek -> last_state == PW_NODE_STATE_RUNNING ) 
 			  return; 
 	 }  /* [ end check non_auto_muted ] */ 
@@ -20,9 +20,11 @@ static void sod_unmuted_auto_mt( sod_info *restore_mt){
 
 	 /* [check if auto_muted is available ] */ 
 
-	 for ( size_t i=0; i< restore_mt -> n_counter; i++){ 
+	 for ( size_t i=0; i< restore_mt -> n_counter; i++){
 
-		 sod_app_handler * chek =& restore_mt ->   sod_node_tracker [i];
+
+
+		 sod_app_handler * chek = restore_mt ->   sod_node_tracker [i];
 		 if ( chek -> sod_auto_mt){ 
 			  sod_mute_node(chek, FALSE);
 			  chek -> sod_auto_mt = FALSE;
@@ -86,7 +88,7 @@ static void db_s(void *data,uint64_t expirations ){
 #ifdef DEBUG
  fprintf(stdout,"Last_state: %d pending_state:%d\n",sod_db -> last_state, sod_db -> pending_state); 
 #endif
- fprintf(stdout,"Node id: %i\nNumber_of_input_port: %i\nNUmber_of_output_port: %i\nNode state:%s\nNode name:%s\nMedia class:%s\n",\
+ fprintf(stdout,"Node id: %i\nNumber_of_input_port: %i\nNUmber_of_output_port: %i\nNode state:%s\nNode name:%s\nMedia class:%s\n\n",\
 
                   sod_db -> id, sod_db -> n_input_ports,sod_db ->n_output_ports,\
 
@@ -118,7 +120,7 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 	 sod_info *sod_remove_data=user_data;
 
 	for (size_t i=0; i< sod_remove_data -> n_counter; i++){ 
-	      sod_app_handler *remover= & sod_remove_data -> sod_node_tracker[i]; 
+	      sod_app_handler *remover=  sod_remove_data -> sod_node_tracker[i]; 
               if (id == remover -> id){
 
 #ifdef DEBUG
@@ -289,10 +291,10 @@ if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS  && info->props != NULL ) {
 	         if (info -> state ==  PW_NODE_STATE_RUNNING ) 
 		for (size_t i=0; i < data -> parent-> n_counter; i++){ 
 
-			if ( data -> parent -> sod_node_tracker[i].sod_auto_mt == TRUE ) 
+			if ( data -> parent -> sod_node_tracker[i] -> sod_auto_mt == TRUE ) 
 				continue;
                               
-                      sod_app_handler *ctrl_mt = &data-> parent -> sod_node_tracker[i]; 
+                      sod_app_handler *ctrl_mt = data-> parent -> sod_node_tracker[i]; 
 
 		      if ( ctrl_mt -> id == data -> id ) 
 			      continue; 
@@ -366,20 +368,52 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
       if ( Media_check != NULL && strcmp(Media_check, "Stream/Output/Audio") == 0  && \
 		   App_match !=FALSE  && Node_name != NULL  ){
 
-	      for(uint32_t i=0; i<TRACK_APP_SIZE; i++) 
-		      if ( sod_data->sod_node_tracker[i].id == id){ 
+	      for(uint32_t i=0; i<sod_data -> n_counter; i++) 
+		      if ( sod_data->sod_node_tracker[i]->id == id){ 
 			     already_tracked=TRUE;  
 			      break;
 		      } 
 
 	      if (already_tracked)
 		      return; 
-                   
+                  
+	     /* [created new size if capacity is filled up] */ 
+
+	     if ( sod_data -> n_counter >= sod_data ->  Track_Capacity){
+		    size_t New_T_C, Old_T_C;
+
+		    Old_T_C= sod_data -> Track_Capacity; 
+
+		    New_T_C= sod_data -> Track_Capacity * 5; 
+
+		    sod_app_handler **pass_new_stg= realloc( sod_data -> sod_node_tracker, New_T_C * sizeof(sod_app_handler) );
+
+		    if (!pass_new_stg){ 
+			   fprintf(stdout,RED"Couldn't Reallocated A New Size\n"RESET); 
+			  exit(21); 
+		    }
+
+		   memset(pass_new_stg + Old_T_C, 0 , (New_T_C - Old_T_C) * sizeof(sod_app_handler *));   
+
+
+			 sod_data -> sod_node_tracker = pass_new_stg; 
+			 sod_data -> Track_Capacity = New_T_C;  
+
+	     }  
 
 	      /* [created a node bind per each app] 
 	       * base on the app in conf.h  */ 
-	      if (sod_data -> n_counter < TRACK_APP_SIZE) { 
-		      sod_app_handler *slot_ctrl= &sod_data->sod_node_tracker[sod_data -> n_counter++];
+	      if (sod_data -> n_counter < sod_data -> Track_Capacity) {
+
+		       sod_app_handler *slot_ctrl=calloc(1, sizeof(* slot_ctrl)); 
+		        
+
+		         if (!slot_ctrl){
+                                 fprintf(stdout,RED"Couldn't give A size to slot_ctrl\n"RESET);
+				  return; 
+			 } 
+
+		      sod_data->sod_node_tracker[sod_data -> n_counter++]= slot_ctrl;
 
 
 
@@ -464,6 +498,16 @@ if ( (char_c=getopt_long(__argc,__argv,"p:", sod_option, NULL) ) !=-1)
 
 
  spa_zero(sod_data); 
+
+ sod_data.Track_Capacity=TRACK_APP_SIZE; 
+ sod_data.sod_node_tracker= calloc(sod_data.Track_Capacity, sizeof(sod_app_handler) );
+
+  if (!sod_data.sod_node_tracker){
+
+	  fprintf(stdout,RED"Can't Allocate The Requested  Size" RESET); 
+	  exit(20);
+
+  }  
 
 
 
