@@ -17,7 +17,6 @@
 #include <pipewire/pipewire.h> 
 #include <spa/param/audio/format-utils.h>
 
-
 struct sod_info_s;
 /* [EACH APP PROXY HANDLER] */
 
@@ -31,12 +30,13 @@ typedef struct {
         struct pw_proxy *sod_node;      /* object */
         struct spa_hook sod_node_hook; /* subscriber aka event handler */
         uint32_t Version;               /* node version */ 
-	enum pw_node_state last_state;
-        enum pw_node_state pending_state;
+	enum pw_node_state last_state;  /* get the last state after debounce */ 
+        enum pw_node_state pending_state;  /* pending state when it flooding */ 
         struct spa_source *db_timer;   /* timer for each node */ 
 	struct pw_loop  *sod_update_loop;
         struct sod_info_s   *parent;	
-        bool pending_param; 
+        bool pending_param;
+        bool sod_auto_mt;               /* store what sod muted */ 	
 
 }sod_app_handler;
 
@@ -49,9 +49,10 @@ typedef struct sod_info_s{
   struct pw_core    * sod_core;               /* proxy  */ 
   struct pw_registry * sod_registry; 
   struct spa_hook     sod_registry_listener;  /* subscriber track for registry */
-  sod_app_handler sod_node_tracker[TRACK_APP_SIZE]; /* array of struct Sod_app_handler */ 
+  sod_app_handler  **sod_node_tracker; /* array of struct Sod_app_handler */ 
   size_t n_counter; 
-  struct pw_loop *sod_cached_loop;
+  size_t Track_Capacity;                     
+  struct pw_loop *sod_cached_loop;             /* cached loop for db timer */ 
   bool	 T_mic_on; 
   float   T_volume; 
 
@@ -71,9 +72,7 @@ void  sod_apply_profile(const struct sod_profile *p , sod_info * data);
 
 void sod_set_volume(sod_app_handler *sod_data, sod_info *info );
 
-
-
-
+void sod_mute_node(sod_app_handler *slot_mt, bool muted  );
 
 
 
