@@ -49,8 +49,9 @@ typedef struct sod_info_s{
   struct pw_core    * sod_core;               /* proxy  */ 
   struct pw_registry * sod_registry; 
   struct spa_hook     sod_registry_listener;  /* subscriber track for registry */
-  sod_app_handler sod_node_tracker[TRACK_APP_SIZE]; /* array of struct Sod_app_handler */ 
+  sod_app_handler  **sod_node_tracker; /* array of struct Sod_app_handler */ 
   size_t n_counter; 
+  size_t Track_Capacity;                     
   struct pw_loop *sod_cached_loop;             /* cached loop for db timer */ 
   bool	 T_mic_on; 
   float   T_volume; 
