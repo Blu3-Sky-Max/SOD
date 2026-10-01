@@ -1,4 +1,4 @@
-# SOD — Sound Output Daemon
+# SOD: Context-Aware Audio Orchestrator for Linux
 
 ---  
 
