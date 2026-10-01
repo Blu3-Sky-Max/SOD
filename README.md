@@ -23,7 +23,6 @@ SOD connects to PipeWire through its native C API, tracks the audio streams of s
 
 - **State debouncing:** PipeWire nodes flicker between running and idle during normal playback. SOD settles each node's state with a per-node timer before it acts.
 
----
 
 ## Profiles
 
@@ -114,10 +113,10 @@ $ sod --profile gaming
 
 Once it is running, play audio in Chrome, Firefox or Boxes. Starting a second app mutes the first, and the first is unmuted when the second stops.
 
----
 
 
 ## Roadmap
+---
 
 - [x] Profile selection (`--profile`) with volume applied at node bind
 - [x] Per-app mute and unmute with newest-wins ducking
@@ -129,14 +128,14 @@ Once it is running, play audio in Chrome, Firefox or Boxes. Starting a second ap
 
 
 ## References
-
+---
 - [PipeWire API tutorial](https://docs.pipewire.org/page_overview.html)
 
----
+
 
 
 
 ## License
-
+---
 GPL-3.0-- [LICENSE](./LICENSE) Copyright (c) 2025 Usman O. Olanrewaju 
 
