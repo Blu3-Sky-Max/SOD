@@ -2,7 +2,9 @@
 
 ---  
 
-A Linux daemon written in C that watches the PipeWire audio graph, applies a volume profile to app audio streams, and automatically mutes and unmutes apps so only one plays at a time. SOD connects to PipeWire through its native C API, tracks the audio streams of selected applications, and controls them per app. It has no GUI. You pick a profile, and SOD keeps the session in order while it runs.
+A Linux daemon written in C that watches the PipeWire audio graph, applies a volume profile to app audio streams, and automatically mutes and unmutes apps so only one plays at a time. 
+
+SOD connects to PipeWire through its native C API, tracks the audio streams of selected applications, and controls them per app. It has no GUI. You pick a profile, and SOD keeps the session in order while it runs.
 
 
 
@@ -27,11 +29,11 @@ A Linux daemon written in C that watches the PipeWire audio graph, applies a vol
 
 | Profile   | Volume | Microphone | 
 |-----------|--------|------------|
-| `night`   | 10%    |            |
+| `library` | 80%    |            |
 | `office`  | 30%    |            |
 | `focus`   | 45%    |            |
 | `meeting` | 60%    |            |
-| `library` | 80%    |            | 
+| `night`   | 10%    |            | 
 | `gaming`  | 100%   |            |
 
 Profile values are defined in `include/profile.h`.
@@ -126,12 +128,12 @@ Once it is running, play audio in Chrome, Firefox or Boxes. Starting a second ap
 - [ ] DSP (PipeWire echo-cancel module, noise cancellation)
 
 
-### Pipewire API Tutorial 
+## References
 
-
-url:[https://docs.pipewire.org/page_overview.html](https://docs.pipewire.org/page_overview.html) 
+- [PipeWire API tutorial](https://docs.pipewire.org/page_overview.html)
 
 ---
+
 
 
 ### License
