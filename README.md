@@ -39,7 +39,7 @@ Profile values are defined in `include/profile.h`.
 > Microphone control is not applied yet. 
 
 
-# How It Works
+### How It Works
 --- 
 
 1. SOD connects to PipeWire and listens on the registry for new global objects.
@@ -96,16 +96,16 @@ $ sudo make uninstall
 ### Usage
 ---
 
-**Run SOD with a profile:**
+***Run SOD with a profile:***
 
 ```bash
 $ sod --profile night
 ```
-***OR***
+****OR****
 ```bash 
 $ sod --profile office
 ```
-***OR***
+****OR****
 ```bash
 $ sod --profile gaming
 ```
@@ -129,7 +129,7 @@ Once it is running, play audio in Chrome, Firefox or Boxes. Starting a second ap
 ### Pipewire API Tutorial 
 
 
-url:[https://docs.pipewire.org/page_overview.html](https://docs.pipewire.org/page_overview.htm) 
+url:[https://docs.pipewire.org/page_overview.html](https://docs.pipewire.org/page_overview.html) 
 
 ---
 
