@@ -8,7 +8,7 @@ SOD connects to PipeWire through its native C API, tracks the audio streams of s
 
 
 
-### Features
+## Features
 --- 
 
 - **Profiles:** `sod --profile < operating_profile_name>` sets a target volume for tracked app streams.
@@ -25,7 +25,7 @@ SOD connects to PipeWire through its native C API, tracks the audio streams of s
 
 ---
 
-### Profiles
+## Profiles
 
 | Profile   | Volume | Microphone | 
 |-----------|--------|------------|
@@ -41,7 +41,7 @@ Profile values are defined in `include/profile.h`.
 > Microphone control is not applied yet. 
 
 
-### How It Works
+## How It Works
 --- 
 
 1. SOD connects to PipeWire and listens on the registry for new global objects.
@@ -53,7 +53,7 @@ Profile values are defined in `include/profile.h`.
 
 The read path (`sod_node_param`) is strictly read-only. All writes go through dedicated functions, which avoids feedback loops between the parameter callback and PipeWire.
 
-### Project layout
+## Project layout
 
 ```
 SOD/
@@ -68,7 +68,7 @@ SOD/
 ```
 
 
-### Dependencies
+## Dependencies
 ---
 | Package | Purpose |
 |---------|---------|
@@ -78,7 +78,7 @@ SOD/
 | `gcc`, `make` | Build toolchain |
 
 
-### Build & Installation
+## Build & Installation
 ---
 
 ```bash
@@ -95,7 +95,7 @@ $ sudo make uninstall
 ```
 
 
-### Usage
+## Usage
 ---
 
 ***Run SOD with a profile:***
@@ -117,7 +117,7 @@ Once it is running, play audio in Chrome, Firefox or Boxes. Starting a second ap
 ---
 
 
-### Roadmap
+## Roadmap
 
 - [x] Profile selection (`--profile`) with volume applied at node bind
 - [x] Per-app mute and unmute with newest-wins ducking
@@ -136,7 +136,7 @@ Once it is running, play audio in Chrome, Firefox or Boxes. Starting a second ap
 
 
 
-### License
+## License
 
-[LICENSE](./LICENSE) Copyright (c) 2025 Usman O. Olanrewaju -GPL-3.0
+GPL-3.0-- [LICENSE](./LICENSE) Copyright (c) 2025 Usman O. Olanrewaju 
 
