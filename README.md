@@ -1,4 +1,4 @@
-# SOD: Context-Aware Audio Orchestrator for Linux
+## SOD: Context-Aware Audio Orchestrator for Linux
 
 ---  
 
