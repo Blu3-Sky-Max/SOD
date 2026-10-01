@@ -6,7 +6,7 @@ A Linux daemon written in C that watches the PipeWire audio graph, applies a vol
 
 
 
-# Features
+## Features
 --- 
 
 - **Profiles:** `sod --profile < operating_profile_name>` sets a target volume for tracked app streams.
@@ -23,7 +23,7 @@ A Linux daemon written in C that watches the PipeWire audio graph, applies a vol
 
 ---
 
-# Profiles
+## Profiles
 
 | Profile   | Volume | Microphone | 
 |-----------|--------|------------|
@@ -52,7 +52,7 @@ Profile values are defined in `include/profile.h`.
 
 The read path (`sod_node_param`) is strictly read-only. All writes go through dedicated functions, which avoids feedback loops between the parameter callback and PipeWire.
 
-# Project layout
+## Project layout
 
 ```
 SOD/
@@ -68,7 +68,7 @@ SOD/
 
 ---
 
-# Dependencies
+## Dependencies
 ---
 | Package | Purpose |
 |---------|---------|
@@ -78,7 +78,7 @@ SOD/
 | `gcc`, `make` | Build toolchain |
 
 
-# Build & Installation
+## Build & Installation
 ---
 
 ```bash
@@ -117,7 +117,7 @@ Once it is running, play audio in Chrome, Firefox or Boxes. Starting a second ap
 ---
 
 
-# Roadmap
+## Roadmap
 
 - [x] Profile selection (`--profile`) with volume applied at node bind
 - [x] Per-app mute and unmute with newest-wins ducking
@@ -128,7 +128,7 @@ Once it is running, play audio in Chrome, Firefox or Boxes. Starting a second ap
 - [ ] DSP (PipeWire echo-cancel module, noise cancellation)
 
 
-# Pipewire API Tutorial 
+## Pipewire API Tutorial 
 
 ```
 url: https://docs.pipewire.org/page_overview.html
@@ -136,6 +136,7 @@ url: https://docs.pipewire.org/page_overview.html
 ---
 
 
-# License
+## License
 
-GPL-3.0 [LICENSE](./LICENSE). Copyright (c) 2025 Usman O. Olanrewaju
+[LICENSE](./LICENSE)Copyright (c) 2025 Usman O. Olanrewaju.GPL-3.0
+
