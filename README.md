@@ -5,7 +5,7 @@ A Linux daemon written in C that watches the PipeWire audio graph, applies a vol
 
 SOD connects to PipeWire through its native C API, tracks the audio streams of selected applications, and controls them per app. It has no GUI. You pick a profile, and SOD keeps the session in order while it runs.
 
-
+**Context-aware:** SOD's context is the active profile plus the playback state of each tracked app. It chooses what to mute from that, so the right app stays audible. Switching profiles automatically is planned, not built yet.
 
 ## Features
  
