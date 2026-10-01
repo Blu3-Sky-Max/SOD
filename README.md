@@ -1,6 +1,5 @@
 ## SOD: Context-Aware Audio Orchestrator for Linux
-
----  
+ 
 
 A Linux daemon written in C that watches the PipeWire audio graph, applies a volume profile to app audio streams, and automatically mutes and unmutes apps so only one plays at a time. 
 
@@ -9,7 +8,7 @@ SOD connects to PipeWire through its native C API, tracks the audio streams of s
 
 
 ## Features
---- 
+ 
 
 - **Profiles:** `sod --profile <profile_name>` sets a target volume for tracked app streams.
 
@@ -41,7 +40,7 @@ Profile values are defined in `include/profile.h`.
 
 
 ## How It Works
---- 
+ 
 
 1. SOD connects to PipeWire and listens on the registry for new global objects.
 2. Each new node is checked against `media.class == "Stream/Output/Audio"` and the `tracked_apps[]` list.
@@ -68,7 +67,7 @@ SOD/
 
 
 ## Dependencies
----
+
 | Package | Purpose |
 |---------|---------|
 | `pipewire` | Audio server |
@@ -78,7 +77,7 @@ SOD/
 
 
 ## Build & Installation
----
+
 
 ```bash
 $ git clone https://github.com/Blu3-Sky-Max/SOD.git
@@ -95,9 +94,9 @@ $ sudo make uninstall
 
 
 ## Usage
----
 
-***Run SOD with a profile:***
+
+Run SOD with a profile:
 
 ```bash
 $ sod --profile night
@@ -116,7 +115,6 @@ Once it is running, play audio in Chrome, Firefox or Boxes. Starting a second ap
 
 
 ## Roadmap
----
 
 - [x] Profile selection (`--profile`) with volume applied at node bind
 - [x] Per-app mute and unmute with newest-wins ducking
@@ -128,7 +126,8 @@ Once it is running, play audio in Chrome, Firefox or Boxes. Starting a second ap
 
 
 ## References
----
+
+
 - [PipeWire API tutorial](https://docs.pipewire.org/page_overview.html)
 
 
@@ -136,6 +135,6 @@ Once it is running, play audio in Chrome, Firefox or Boxes. Starting a second ap
 
 
 ## License
----
+
 GPL-3.0-- [LICENSE](./LICENSE) Copyright (c) 2025 Usman O. Olanrewaju 
 
