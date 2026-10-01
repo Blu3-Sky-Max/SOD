@@ -11,7 +11,7 @@ SOD connects to PipeWire through its native C API, tracks the audio streams of s
 ## Features
 --- 
 
-- **Profiles:** `sod --profile <operating_modes_name>` sets a target volume for tracked app streams.
+- **Profiles:** `sod --profile <profile_name>` sets a target volume for tracked app streams.
 
 - **Auto mute/unmute (ducking):** when a tracked app starts playing, other playing tracked apps are muted. When the newest app stops, apps that SOD muted are unmuted again. Mutes you make yourself are left alone.
 
