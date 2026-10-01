@@ -98,7 +98,7 @@ $ sudo make uninstall
 # Usage
 ---
 
-Run SOD with a profile:
+**Run SOD with a profile:**
 
 ```bash
 $ sod --profile night
@@ -122,7 +122,6 @@ Once it is running, play audio in Chrome, Firefox or Boxes. Starting a second ap
 - [x] Profile selection (`--profile`) with volume applied at node bind
 - [x] Per-app mute and unmute with newest-wins ducking
 - [x] Dynamic node tracking and cleanup
-- [ ] Raise or replace the tracker capacity limit
 - [ ] Sink and source control, including the microphone
 - [ ] Full log file output
 - [ ] Audio routing
@@ -139,4 +138,4 @@ url: https://docs.pipewire.org/page_overview.html
 
 # License
 
-GPL-3.0 — see [LICENSE](./LICENSE). Copyright (c) 2025 Usman O. Olanrewaju
+GPL-3.0 [LICENSE](./LICENSE). Copyright (c) 2025 Usman O. Olanrewaju
