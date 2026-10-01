@@ -38,7 +38,6 @@ Profile values are defined in `include/profile.h`.
 
 > Microphone control is not applied yet. 
 
----
 
 # How It Works
 --- 
@@ -66,7 +65,6 @@ SOD/
 └── README.md
 ```
 
----
 
 ## Dependencies
 ---
@@ -138,5 +136,5 @@ url: https://docs.pipewire.org/page_overview.html
 
 ## License
 
-[LICENSE](./LICENSE)Copyright (c) 2025 Usman O. Olanrewaju.GPL-3.0
+[LICENSE](./LICENSE) Copyright (c) 2025 Usman O. Olanrewaju -GPL-3.0
 
