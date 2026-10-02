@@ -33,7 +33,7 @@ typedef struct {
 	enum pw_node_state last_state;  /* get the last state after debounce */ 
         enum pw_node_state pending_state;  /* pending state when it flooding */ 
         struct spa_source *db_timer;   /* timer for each node */ 
-	struct pw_loop  *sod_update_loop;
+	struct pw_loop  *sod_update_loop;      /* loop for cached loop for db_timer */  
         struct sod_info_s   *parent;	
         bool pending_param;
         bool sod_auto_mt;               /* store what sod muted */ 	
@@ -49,10 +49,14 @@ typedef struct sod_info_s{
   struct pw_core    * sod_core;               /* proxy  */ 
   struct pw_registry * sod_registry; 
   struct spa_hook     sod_registry_listener;  /* subscriber track for registry */
+
   sod_app_handler  **sod_node_tracker; /* array of struct Sod_app_handler */ 
-  size_t n_counter; 
-  size_t Track_Capacity;                     
-  struct pw_loop *sod_cached_loop;             /* cached loop for db timer */ 
+  size_t n_counter;                       /* number of count for node  */  
+
+  size_t Track_Capacity;                     /* track size of sod_node_tracker */  
+
+  struct pw_loop *sod_cached_loop;             /* cached loop for db timer */
+
   bool	 T_mic_on; 
   float   T_volume; 
 
