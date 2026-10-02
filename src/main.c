@@ -41,14 +41,16 @@ static void sod_unmuted_auto_mt( sod_info *restore_mt){
 	 }  /* [ end check non_auto_muted ] */ 
 
 
-	 /* [check if auto_muted is available ] */ 
+	 /* [check if auto_muted is available ]
+	  * meaning check if there's any node sod 
+	  * muted  */ 
 
 	 for ( size_t i=0; i< restore_mt -> n_counter; i++){
 
 
 
 		 sod_app_handler * chek = restore_mt ->   sod_node_tracker [i];
-		 if ( chek -> sod_auto_mt){ 
+		 if ( chek -> sod_auto_mt && chek -> last_state ==PW_NODE_STATE_RUNNING){ 
 			  sod_mute_node(chek, FALSE);
 			  chek -> sod_auto_mt = FALSE;
 			 break;  
@@ -193,10 +195,7 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 	 } 
 		 sod_remove_data -> n_counter--;
 
-		/* turn the location to zero incase 
-		 * if user pause and play within 5
-		 * sec   
-		 */  
+		/* turn the location to zero when emit */ 
 
             memset(remover, 0, sizeof(*remover));
 
@@ -361,7 +360,7 @@ static const struct pw_node_events sod_node_event = {
 
 
 
-  /* [registry event func] + [info binding] */ 
+  /* [registry event func] + [node binding] */ 
 
 static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions, const char *type, uint32_t version,const struct spa_dict *props){ 
      sod_info *sod_data=user_data;
@@ -528,7 +527,7 @@ if ( (char_c=getopt_long(__argc,__argv,"p:", sod_option, NULL) ) !=-1)
  spa_zero(sod_data); 
 
  sod_data.Track_Capacity=TRACK_APP_SIZE; 
- sod_data.sod_node_tracker= calloc(sod_data.Track_Capacity, sizeof(sod_app_handler) );
+ sod_data.sod_node_tracker= calloc(sod_data.Track_Capacity, sizeof(*sod_data.sod_node_tracker) );
 
   if (!sod_data.sod_node_tracker){
 
