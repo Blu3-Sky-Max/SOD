@@ -1,4 +1,5 @@
 #include "blu3.h"
+#include "mic.h"
 
 
 /* 
@@ -10,8 +11,8 @@ static void sod_newest_node(sod_app_handler  *running) {
 	sod_info *newest_node= running -> parent; 
 
 	if ( running -> sod_auto_mt == TRUE  || running -> sod_auto_mt == FALSE ){ 
-		sod_mute_node(running, newest_node ->  T_mic_on); 
-		running -> sod_auto_mt = newest_node -> T_mic_on; 
+		sod_mute_node(running, FALSE); 
+		running -> sod_auto_mt = FALSE; 
 	} 
 
 	 /* mute every other tracked node that is still running */
@@ -111,13 +112,14 @@ static void db_s(void *data,uint64_t expirations ){
 
  
 #ifdef DEBUG
- fprintf(stdout,"Last_state: %d pending_state:%d\n",sod_db -> last_state, sod_db -> pending_state); 
+ sod_error("Last_state: %d pending_state:%d\n",sod_db -> last_state, sod_db -> pending_state); 
 #endif
- fprintf(stdout,"Node id: %i\nNumber_of_input_port: %i\nNUmber_of_output_port: %i\nNode state:%s\nNode name:%s\nMedia class:%s\n\n",\
+ sod_print("Node id: %i\nNumber_of_input_port: %i\nNUmber_of_output_port: %i\nNode state:%s\nNode name:%s\nMedia class:%s\nMedia name: %s\n\n",\
 
                   sod_db -> id, sod_db -> n_input_ports,sod_db ->n_output_ports,\
 
-		  pw_node_state_as_string(sod_db -> last_state),sod_db -> Node_name, sod_db -> Media_class);
+		  pw_node_state_as_string(sod_db -> last_state),sod_db -> Node_name, sod_db -> Media_class,\
+		  sod_db -> media_name);
 
                
              if ( sod_db -> last_state == PW_NODE_STATE_RUNNING)
@@ -152,7 +154,7 @@ static void sod_registry_remover(void *user_data, uint32_t id){
               if (id == remover -> id){
 
 #ifdef DEBUG
-		     fprintf(stderr, "State id=%u %d -> %d\n", remover->id, remover->last_state, remover->pending_state);
+		     sod_error("State id=%u %d -> %d\n", remover->id, remover->last_state, remover->pending_state);
 #endif 
 		     /* node (Boxes) running (3) ->(1) suspend to remove.
 		      * send a report back to reporter
@@ -237,7 +239,7 @@ static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint
 			       SPA_PROP_volume: { 
 				       float volume; 
 				       spa_pod_get_float( &new_prop -> value,&volume);
-				       fprintf(stdout,"Volume: %f ID: %i\n", volume,  sod_data -> id); 
+				       sod_print("Volume: %f ID: %i\n", volume,  sod_data -> id); 
 
 				       break; 
 			       }  
@@ -245,7 +247,7 @@ static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint
 			      SPA_PROP_mute: { 
 				     bool mute; 
 				     spa_pod_get_bool(&new_prop->value , &mute); 
-				     fprintf(stdout, "Mute:%s\n\n",mute ? "true" : "false"); 
+				     sod_print( "Mute:%s\n\n",mute ? "true" : "false"); 
 				     break; 
 			      }
 		      case 
@@ -280,11 +282,14 @@ if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS  && info->props != NULL ) {
 
  const char *node_name=spa_dict_lookup(info->props, "node.name");
  const char *Media_class=spa_dict_lookup(info->props,"media.class");
+ const char *media_name= spa_dict_lookup(info-> props,  "media.name" );  
 
   if (node_name)
-	 strncpy(data -> Node_name, node_name, sizeof(data -> Node_name)); 
+	 strncpy(data -> Node_name, node_name, sizeof(data -> Node_name)-1); 
 			if (Media_class)
-		strncpy(data ->Media_class,Media_class, sizeof(data->Media_class));
+		strncpy(data ->Media_class,Media_class, sizeof(data->Media_class)-1);
+			if (media_name) 
+				strncpy(data -> media_name,media_name, sizeof(data -> media_name)-1); 
 
 		data->n_input_ports=info -> n_input_ports;	
 		
@@ -371,6 +376,11 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 
      const char *Media_check=spa_dict_lookup(props,"media.class");
      const char *Node_name=spa_dict_lookup(props,"node.name");
+
+
+         /* [microphone] */ 
+      if (Media_check != NULL && strcmp(Media_check, "Audio/Source") == 0)
+	       sod_mic_controller(props, id, sod_data);  
     
     
      App_match=already_tracked=FALSE;
@@ -414,7 +424,7 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 		    sod_app_handler **pass_new_stg= realloc( sod_data -> sod_node_tracker, New_T_C * sizeof(sod_app_handler) );
 
 		    if (!pass_new_stg){ 
-			   fprintf(stdout,RED"Couldn't Reallocated A New Size\n"RESET); 
+			   sod_error("Couldn't Reallocated A New Size\n"); 
 			  exit(21); 
 		    }
                   /* realloc keeps the existing pointers but leaves the newly added
@@ -436,7 +446,7 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 		        
 
 		         if (!slot_ctrl){
-                                 fprintf(stdout,RED"Couldn't give A size to slot_ctrl\n"RESET);
+                                 sod_error("Couldn't give A size to slot_ctrl\n");
 				  return; 
 			 } 
 
@@ -501,7 +511,7 @@ sod_info sod_data;
  int char_c ,  Match_index= -1; 
 
 if  (__argc != 3 ){  
-       fprintf(stdout, show_case); 
+       sod_print(show_case); 
 
  
        exit(EXIT_FAILURE);        
@@ -517,7 +527,7 @@ if ( (char_c=getopt_long(__argc,__argv,"p:", sod_option, NULL) ) !=-1)
 		} 	       
 
  if (Match_index == -1) { 
-	fprintf(stdout,show_case);
+	sod_print(show_case);
        
 	exit(19); 
  }
@@ -531,7 +541,7 @@ if ( (char_c=getopt_long(__argc,__argv,"p:", sod_option, NULL) ) !=-1)
 
   if (!sod_data.sod_node_tracker){
 
-	  fprintf(stdout,RED"Can't Allocate The Requested  Size" RESET); 
+	  sod_error("Can't Allocate The Requested  Size"); 
 	  exit(20);
 
   }  
@@ -548,7 +558,7 @@ sod_data. sod_core=pw_context_connect(sod_data.sod_context,NULL,0);
 /* verify if proxy is allocated  */
 
  if (sod_data.sod_core == NULL){ 
-   fprintf(stdout,"Core is not a proxy\n"); 
+   sod_error("Core is not a proxy\n"); 
 
     exit(9); 
 
