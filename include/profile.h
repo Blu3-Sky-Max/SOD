@@ -31,9 +31,11 @@
 
 struct sod_profile { 
 
-	 const char  *P_name;     /* profile name */ 
+	 const char  *P_name;     /* profile name */
+
 	int Volume;               /* profile volume */ 
-	bool mute;             /* profile mic setting */ 
+
+	bool mic_on;             /* profile mic setting */ 
 
 
 
