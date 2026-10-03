@@ -23,34 +23,67 @@ struct sod_info_s;
 typedef struct {
 
 	char Node_name[512];
-	char Media_class[256]; 
+
+	char Media_class[256];
+
 	int32_t n_input_ports;
+
 	int32_t n_output_ports;
+
         uint32_t  id;
+	
         struct pw_proxy *sod_node;      /* object */
+	
         struct spa_hook sod_node_hook; /* subscriber aka event handler */
+
         uint32_t Version;               /* node version */ 
-	enum pw_node_state last_state;  /* get the last state after debounce */ 
+
+	enum pw_node_state last_state;  /* get the last state after debounce */
+
         enum pw_node_state pending_state;  /* pending state when it flooding */ 
-        struct spa_source *db_timer;   /* timer for each node */ 
-	struct pw_loop  *sod_update_loop;      /* loop for cached loop for db_timer */  
+
+        struct spa_source *db_timer;   /* timer for each node */
+
+	struct pw_loop  *sod_update_loop;      /* loop for cached loop for db_timer */ 
+
         struct sod_info_s   *parent;	
+
         bool pending_param;
-        bool sod_auto_mt;               /* store what sod muted */ 	
+
+        bool sod_auto_mt;               /* store what sod muted */ 
+
+        char media_name[1024];           /* add media name to know name given by node_name */ 	
 
 }sod_app_handler;
 
 
+#define MIC_MAX_SIZE 12
+
+
+/* [sod_mic] */  
+
+typedef struct {
+        char mic_name[256];
+
+        uint32_t mic_id;
+
+
+}sod_mic; 
 
 typedef struct sod_info_s{ 
 
-  struct pw_main_loop * sod_loop;         /* event loop */  
-  struct pw_context   * sod_context;        /* sod obj */ 
+  struct pw_main_loop * sod_loop;         /* event loop */
+
+  struct pw_context   * sod_context;        /* sod obj */
+
   struct pw_core    * sod_core;               /* proxy  */ 
-  struct pw_registry * sod_registry; 
+
+  struct pw_registry * sod_registry;
+
   struct spa_hook     sod_registry_listener;  /* subscriber track for registry */
 
-  sod_app_handler  **sod_node_tracker; /* array of struct Sod_app_handler */ 
+  sod_app_handler  **sod_node_tracker; /* array of struct Sod_app_handler */
+
   size_t n_counter;                       /* number of count for node  */  
 
   size_t Track_Capacity;                     /* track size of sod_node_tracker */  
@@ -58,12 +91,19 @@ typedef struct sod_info_s{
   struct pw_loop *sod_cached_loop;             /* cached loop for db timer */
 
   bool	 T_mic_on; 
+
   float   T_volume; 
 
+  sod_mic mics[MIC_MAX_SIZE]; 
+
+  uint32_t mic_count; 
 
 } sod_info; 
 
 
+
+
+#define sod_error(fmt, ...)   fprintf(stderr,RED fmt RESET, ##__VA_ARGS__)
 #define  sod_print(...)  fprintf(stdout,__VA_ARGS__) 
  /* debounce timer */ 
 
