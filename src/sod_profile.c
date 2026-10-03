@@ -8,11 +8,11 @@
 void  sod_apply_profile(const struct sod_profile *p , sod_info * data){ 
 
 	 if ( p -> Volume > 1 ) { 
-		  data -> T_mic_on= p -> mute;
+		  data -> T_mic_on= p -> mic_on;
 		  data -> T_volume = p -> Volume / 100.0f; 
 	 } 
 	 else { 
-		 data -> T_mic_on= p -> mute; 
+		 data -> T_mic_on= p -> mic_on; 
 		 data -> T_volume = p -> Volume;
 	 } 
 
@@ -24,7 +24,7 @@ void  sod_apply_profile(const struct sod_profile *p , sod_info * data){
 void sod_set_volume(sod_app_handler *sod_data, sod_info *V_info ) {
 
 #ifdef DEBUG
-        fprintf(stdout,"mute status: %d ID: %i\n",V_info -> T_mic_on, sod_data -> id); 	
+        sod_error("mute status: %d ID: %i\n",V_info -> T_mic_on, sod_data -> id); 	
 	 
 #endif 
 	 uint8_t buffer[1024]; 
