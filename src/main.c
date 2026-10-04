@@ -194,8 +194,12 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 	 if (i !=resize){ 
 
 		 sod_remove_data -> sod_node_tracker[i] = sod_remove_data -> sod_node_tracker[resize];
+		 
 	 } 
-		 sod_remove_data -> n_counter--;
+		
+	     sod_remove_data -> sod_node_tracker[resize]=NULL ;
+
+	     sod_remove_data -> n_counter--;
 
 		/* turn the location to zero when emit */ 
 
@@ -208,6 +212,11 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 	      }
 
 	      }
+
+	 
+	  /* [mic remover]  */ 
+
+	     sod_mic_remover(user_data , id); 
 
 } 
 
@@ -380,7 +389,7 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 
          /* [microphone] */ 
       if (Media_check != NULL && strcmp(Media_check, "Audio/Source") == 0)
-	       sod_mic_controller(props, id, sod_data);  
+	       sod_mic_controller(props, id, sod_data, type);  
     
     
      App_match=already_tracked=FALSE;
@@ -425,7 +434,7 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 
 		    if (!pass_new_stg){ 
 			   sod_error("Couldn't Reallocated A New Size\n"); 
-			  exit(21); 
+			  return;  
 		    }
                   /* realloc keeps the existing pointers but leaves the newly added
 		   *  slots uninitialized, so zero only the new part [Old_T_C, New_T_C]    
@@ -469,7 +478,7 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 	      
 	                 slot_ctrl -> sod_auto_mt=FALSE;
 
-                    /* [set param per node ] */ 
+                    /* [set param per node ] + volume */ 
 		   sod_set_volume(slot_ctrl, slot_ctrl-> parent );
 	      
 	      pw_node_add_listener((struct pw_node *)slot_ctrl -> sod_node, &slot_ctrl -> sod_node_hook, &sod_node_event, slot_ctrl);
@@ -514,10 +523,16 @@ if  (__argc != 3 ){
        sod_print(show_case); 
 
  
-       exit(EXIT_FAILURE);        
+       exit(INC_ARG);        
 } 
 
-if ( (char_c=getopt_long(__argc,__argv,"p:", sod_option, NULL) ) !=-1)  
+if ( (char_c=getopt_long(__argc,__argv,"p:", sod_option, NULL) ) !=-1)  { 
+
+	if ( char_c != 'p' ){ 
+            sod_print(show_case); 
+	    exit (BAD_OPTION); 
+
+	} 
 
 	for (int i=0; i<N_PROFILE; i++)
 		if (strcmp(optarg,profiles[i].P_name)==0){ 
@@ -525,11 +540,13 @@ if ( (char_c=getopt_long(__argc,__argv,"p:", sod_option, NULL) ) !=-1)
 			Match_index = i;
 		       break; 
 		} 	       
+} 
+
 
  if (Match_index == -1) { 
 	sod_print(show_case);
        
-	exit(19); 
+	exit(UNKOWN_PROFILE); 
  }
 
 
@@ -542,7 +559,7 @@ if ( (char_c=getopt_long(__argc,__argv,"p:", sod_option, NULL) ) !=-1)
   if (!sod_data.sod_node_tracker){
 
 	  sod_error("Can't Allocate The Requested  Size"); 
-	  exit(20);
+	  exit(ALLOC_FAIL);
 
   }  
 
@@ -560,7 +577,7 @@ sod_data. sod_core=pw_context_connect(sod_data.sod_context,NULL,0);
  if (sod_data.sod_core == NULL){ 
    sod_error("Core is not a proxy\n"); 
 
-    exit(9); 
+    exit(ALLOC_FAIL); 
 
  } 
 
