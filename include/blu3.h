@@ -72,7 +72,15 @@ typedef struct {
 	
 	struct spa_hook mic_node_listener;    /* mic event tracker */ 
 
-	enum pw_node_state mic_state;          /* mic state */ 
+	enum pw_node_state mic_last_state;          /* mic last state */ 
+
+	enum pw_node_state mic_pending_state;       /* mic pending state */ 
+
+        struct spa_source *mic_db_timer;           /* mic db_timer source */ 
+
+       struct pw_loop   *sod_mic_loop; 	          /* time loop */ 
+        	
+
 
 
 
@@ -105,6 +113,7 @@ typedef struct sod_info_s{
   sod_mic *mics[MIC_MAX_SIZE]; 
 
   uint32_t mic_count; 
+  
 
 } sod_info; 
 
