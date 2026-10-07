@@ -1,6 +1,6 @@
 #include "mic.h" 
 
-
+  /* [debounce func] */ 
 static void mic_db_func(void *data,uint64_t exp ) { 
 
          sod_mic *sod_mic=data;
@@ -13,6 +13,12 @@ static void mic_db_func(void *data,uint64_t exp ) {
 			  mic_name, sod_mic -> mic_description);
 
 
+	if ( sod_mic -> mic_last_state ==  PW_NODE_STATE_RUNNING) 
+		sod_mute_app_for_mic(sod_mic ->mic_parent, sod_mic);
+	
+	else { 
+		sod_auto_unmute_a(sod_mic -> mic_parent, sod_mic); 
+	} 
 
 
 	} 
@@ -83,13 +89,16 @@ void sod_mic_controller (const struct spa_dict *props,uint32_t id,  sod_info *us
 
 	  if (Node_name) 
 
-	  strncpy(p_mic -> mic_name, Node_name, sizeof(p_mic -> mic_name) -1); 
+	  strncpy(p_mic -> mic_name, Node_name, sizeof(p_mic -> mic_name) -1);
+
           if (Node_description) 
      strncpy(p_mic -> mic_description, Node_description, sizeof(p_mic ->mic_description ) -1);
 
  	  p_mic -> mic_id = id;
 
 	  p_mic -> sod_mic_loop= user_data_ -> sod_cached_loop; 
+
+	  p_mic -> mic_parent = user_data; 
 
 	 /* [add debounce timer for each mic node] */ 
 
@@ -119,7 +128,17 @@ void sod_mic_remover (void *data, uint32_t id){
         for (uint32_t i=0; i < sod_remove_data -> mic_count; i++) {
 
                    sod_mic *remover_mic = sod_remove_data -> mics[i];
+
+
+
                    if ( remover_mic -> mic_id == id){
+			    
+			   /* [unmute if goes from running to suspend] */
+
+			  remover_mic->mic_last_state = PW_NODE_STATE_SUSPENDED;
+
+			   sod_auto_unmute_a(sod_remove_data, remover_mic);
+
 
                 sod_error("removing -> mic id:%i mic name: %s\n", remover_mic -> mic_id, remover_mic -> mic_name);
                       if ( remover_mic -> mic_db_timer) 
@@ -148,3 +167,5 @@ void sod_mic_remover (void *data, uint32_t id){
 
 	} 
 } 
+
+
