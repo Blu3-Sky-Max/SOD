@@ -52,7 +52,10 @@ typedef struct {
 
         bool sod_auto_mt;               /* store what sod muted */ 
 
-        char media_name[1024];           /* add media name to know name given by node_name */ 	
+        char media_name[1024];           /* add media name to know name given by node_name */ 
+
+       _Bool     sod_mic_auto_mt;            /* store what mic muted */ 
+	
 
 }sod_app_handler;
 
@@ -78,8 +81,10 @@ typedef struct {
 
         struct spa_source *mic_db_timer;           /* mic db_timer source */ 
 
-       struct pw_loop   *sod_mic_loop; 	          /* time loop */ 
-        	
+       struct pw_loop   *sod_mic_loop; 	          /* timer loop */ 
+
+       struct sod_info_s   *mic_parent;          
+
 
 
 
@@ -134,6 +139,8 @@ void  sod_apply_profile(const struct sod_profile *p , sod_info * data);
 void sod_set_volume(sod_app_handler *sod_data, sod_info *info );
 
 void sod_mute_node(sod_app_handler *slot_mt, bool muted  );
+
+
 
 /* [EXIT CODE] */ 
 typedef enum  {
