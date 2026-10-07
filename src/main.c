@@ -10,7 +10,8 @@ static void sod_newest_node(sod_app_handler  *running) {
 
 	sod_info *newest_node= running -> parent; 
 
-	if ( running -> sod_auto_mt == TRUE  || running -> sod_auto_mt == FALSE ){ 
+	if ( ( running -> sod_auto_mt == TRUE  || running -> sod_auto_mt == FALSE)  && running -> \
+	  sod_mic_auto_mt == FALSE ){ 
 		sod_mute_node(running, FALSE); 
 		running -> sod_auto_mt = FALSE; 
 	} 
@@ -37,7 +38,7 @@ static void sod_unmuted_auto_mt( sod_info *restore_mt){
   
 	 for (size_t i =0; i < restore_mt ->  n_counter; i++) { 
 		 sod_app_handler * chek = restore_mt -> sod_node_tracker [i]; 
-		  if ( ! chek -> sod_auto_mt &&  chek -> last_state == PW_NODE_STATE_RUNNING ) 
+		  if (chek != NULL && ! chek -> sod_auto_mt && ! chek -> sod_mic_auto_mt &&  chek -> last_state == PW_NODE_STATE_RUNNING ) 
 			  return; 
 	 }  /* [ end check non_auto_muted ] */ 
 
@@ -46,12 +47,13 @@ static void sod_unmuted_auto_mt( sod_info *restore_mt){
 	  * meaning check if there's any node sod 
 	  * muted  */ 
 
-	 for ( size_t i=0; i< restore_mt -> n_counter; i++){
+	 for ( size_t i= restore_mt -> n_counter; i-- > 0;){
 
 
 
 		 sod_app_handler * chek = restore_mt ->   sod_node_tracker [i];
-		 if ( chek -> sod_auto_mt && chek -> last_state ==PW_NODE_STATE_RUNNING){ 
+		 if ( chek != NULL &&  chek -> sod_auto_mt && chek -> last_state ==PW_NODE_STATE_RUNNING \
+				 && chek -> sod_mic_auto_mt == FALSE){ 
 			  sod_mute_node(chek, FALSE);
 			  chek -> sod_auto_mt = FALSE;
 			 break;  
@@ -477,6 +479,8 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 			  slot_ctrl -> parent = sod_data; 
 	      
 	                 slot_ctrl -> sod_auto_mt=FALSE;
+
+			 slot_ctrl -> sod_mic_auto_mt = FALSE; 
 
                     /* [set param per node ] + volume */ 
 		   sod_set_volume(slot_ctrl, slot_ctrl-> parent );
