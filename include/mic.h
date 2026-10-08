@@ -8,6 +8,7 @@
 #include "blu3.h"
 
 
+void sod_mic_apply_profile(sod_mic *ptr, _Bool status ); 
 
 void sod_mute_app_for_mic(sod_info *mic_p, sod_mic *sod_mic);
 

@@ -16,8 +16,10 @@
 #include <spa/pod/iter.h>
 #include <pipewire/pipewire.h> 
 #include <spa/param/audio/format-utils.h>
+#include "capture.h" 
 
-struct sod_info_s;
+
+
 /* [EACH APP PROXY HANDLER] */
 
 typedef struct {
@@ -71,6 +73,7 @@ typedef struct {
         uint32_t mic_id;                    /* node id of the mic */ 
 
 	char mic_description[1024];      /* mic description Ex: "Ryzen HD Audio Controller Headset Mono Microphone" */ 
+	
 	struct pw_node *mic_node;          /* mic binding node */ 
 	
 	struct spa_hook mic_node_listener;    /* mic event tracker */ 
@@ -117,7 +120,11 @@ typedef struct sod_info_s{
 
   sod_mic *mics[MIC_MAX_SIZE]; 
 
-  uint32_t mic_count; 
+  uint32_t mic_count;
+
+  sod_capture *captures[CAP_MAX_SIZE]; 
+  
+   uint32_t  n_capture;  
   
 
 } sod_info; 
@@ -141,7 +148,6 @@ void sod_set_volume(sod_app_handler *sod_data, sod_info *info );
 void sod_mute_node(sod_app_handler *slot_mt, bool muted  );
 
 
-
 /* [EXIT CODE] */ 
 typedef enum  {
 
@@ -152,6 +158,7 @@ typedef enum  {
 	ALLOC_FAIL,      /* allocation fail */  
 
 	UNKOWN_PROFILE    /* unkown profile */ 
+
 
 }sod_exit_status;	
 

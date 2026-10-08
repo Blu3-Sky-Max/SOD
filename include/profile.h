@@ -49,7 +49,7 @@ static const struct sod_profile profiles[] = { \
 	{ "library", Library_Vol, FALSE},    /* Library modes */ 
 
 	{ "focus",  Focus_Vol, FALSE },     /* focus modes */ 
-	{ "gaming", Gaming_Vol, FALSE	 },    /* gaming modes */ 
+	{ "gaming", Gaming_Vol, TRUE	},    /* gaming modes */ 
 	{ "office", Office_Vol, FALSE },   /* office modes */ 
 	{ "meeting", Meeting_Vol , TRUE},  /* meeting modes */ 
 	{ "night", Night_Vol, TRUE},      /* night modes */ 
