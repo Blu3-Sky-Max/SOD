@@ -1,5 +1,7 @@
 #include "mic.h" 
 
+
+
   /* [debounce func] */ 
 static void mic_db_func(void *data,uint64_t exp ) { 
 
@@ -11,14 +13,6 @@ static void mic_db_func(void *data,uint64_t exp ) {
 	  sod_print("Mic_id : %u\nMic_state:%s\nMic name:%s\nMic description:%s\n\n"\
 			  ,sod_mic ->mic_id,pw_node_state_as_string( sod_mic -> mic_last_state) ,sod_mic ->\
 			  mic_name, sod_mic -> mic_description);
-
-
-	if ( sod_mic -> mic_last_state ==  PW_NODE_STATE_RUNNING) 
-		sod_mute_app_for_mic(sod_mic ->mic_parent, sod_mic);
-	
-	else { 
-		sod_auto_unmute_a(sod_mic -> mic_parent, sod_mic); 
-	} 
 
 
 	} 
@@ -60,7 +54,7 @@ void sod_mic_controller (const struct spa_dict *props,uint32_t id,  sod_info *us
    const char *Media_class=spa_dict_lookup(props,PW_KEY_MEDIA_CLASS);
    const char *Node_description=spa_dict_lookup(props, PW_KEY_NODE_DESCRIPTION); 
 
-     if(Node_name !=NULL && strcmp(Media_class, "Audio/Source")==0 && Media_class !=NULL && \
+     if(Node_name !=NULL && Media_class != NULL && strcmp(Media_class, "Audio/Source")==0  && \
       Node_description != NULL  ){ 
 
 
@@ -69,11 +63,11 @@ void sod_mic_controller (const struct spa_dict *props,uint32_t id,  sod_info *us
 			     return;
  
 	     /* [check max grow] */
-	     if ( user_data_ -> mic_count > MIC_MAX_SIZE) 
+	     if ( user_data_ -> mic_count >= MIC_MAX_SIZE) 
 		     return; 
           
 
-         sod_mic *p_mic= malloc ( 1 * sizeof(*p_mic)); 
+         sod_mic *p_mic= calloc ( 1,  sizeof(*p_mic)); 
 
           if (p_mic == NULL)
 	    return; 
@@ -96,8 +90,10 @@ void sod_mic_controller (const struct spa_dict *props,uint32_t id,  sod_info *us
 
  	  p_mic -> mic_id = id;
 
-	  p_mic -> sod_mic_loop= user_data_ -> sod_cached_loop; 
-
+	  p_mic -> sod_mic_loop= user_data_ -> sod_cached_loop;
+	  
+	  
+	  
 	  p_mic -> mic_parent = user_data; 
 
 	 /* [add debounce timer for each mic node] */ 
@@ -108,6 +104,14 @@ void sod_mic_controller (const struct spa_dict *props,uint32_t id,  sod_info *us
 
 
 	  pw_node_add_listener ( p_mic -> mic_node, &p_mic -> mic_node_listener, &sod_mic_event,p_mic);   
+
+	  
+          /* [set profile mic] */
+
+
+          sod_mic_apply_profile(p_mic, user_data_ -> T_mic_on);
+
+
 
 #ifdef DEBUG 
 
@@ -132,12 +136,6 @@ void sod_mic_remover (void *data, uint32_t id){
 
 
                    if ( remover_mic -> mic_id == id){
-			    
-			   /* [unmute if goes from running to suspend] */
-
-			  remover_mic->mic_last_state = PW_NODE_STATE_SUSPENDED;
-
-			   sod_auto_unmute_a(sod_remove_data, remover_mic);
 
 
                 sod_error("removing -> mic id:%i mic name: %s\n", remover_mic -> mic_id, remover_mic -> mic_name);

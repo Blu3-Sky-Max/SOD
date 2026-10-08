@@ -10,8 +10,7 @@ static void sod_newest_node(sod_app_handler  *running) {
 
 	sod_info *newest_node= running -> parent; 
 
-	if ( ( running -> sod_auto_mt == TRUE  || running -> sod_auto_mt == FALSE)  && running -> \
-	  sod_mic_auto_mt == FALSE ){ 
+	if (  running -> sod_auto_mt == TRUE  || running -> sod_auto_mt == FALSE){ 
 		sod_mute_node(running, FALSE); 
 		running -> sod_auto_mt = FALSE; 
 	} 
@@ -38,9 +37,10 @@ static void sod_unmuted_auto_mt( sod_info *restore_mt){
   
 	 for (size_t i =0; i < restore_mt ->  n_counter; i++) { 
 		 sod_app_handler * chek = restore_mt -> sod_node_tracker [i]; 
-		  if (chek != NULL && ! chek -> sod_auto_mt && ! chek -> sod_mic_auto_mt &&  chek -> last_state == PW_NODE_STATE_RUNNING ) 
+		  if (chek != NULL && ! chek -> sod_auto_mt &&  chek -> last_state == PW_NODE_STATE_RUNNING ) 
 			  return; 
 	 }  /* [ end check non_auto_muted ] */ 
+
 
 
 	 /* [check if auto_muted is available ]
@@ -52,8 +52,7 @@ static void sod_unmuted_auto_mt( sod_info *restore_mt){
 
 
 		 sod_app_handler * chek = restore_mt ->   sod_node_tracker [i];
-		 if ( chek != NULL &&  chek -> sod_auto_mt && chek -> last_state ==PW_NODE_STATE_RUNNING \
-				 && chek -> sod_mic_auto_mt == FALSE){ 
+		 if ( chek != NULL &&  chek -> sod_auto_mt && chek -> last_state ==PW_NODE_STATE_RUNNING){ 
 			  sod_mute_node(chek, FALSE);
 			  chek -> sod_auto_mt = FALSE;
 			 break;  
@@ -389,9 +388,14 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
      const char *Node_name=spa_dict_lookup(props,"node.name");
 
 
-         /* [microphone] */ 
-      if (Media_check != NULL && strcmp(Media_check, "Audio/Source") == 0)
-	       sod_mic_controller(props, id, sod_data, type);  
+         /* [microphone source] */ 
+      if (Media_check != NULL && Node_name && strcmp(Media_check, "Audio/Source") == 0)
+	       sod_mic_controller(props, id, sod_data, type);
+           
+
+        /* [microphone capture] */ 
+    if (Media_check != NULL && Node_name != NULL && strcmp (Media_check, "Stream/Input/Audio") == 0  )
+		  sod_mic_capture(props , id , sod_data , type);   
     
     
      App_match=already_tracked=FALSE;
@@ -482,10 +486,10 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 
 			 slot_ctrl -> sod_mic_auto_mt = FALSE; 
 
-                    /* [set param per node ] + volume */ 
-		   sod_set_volume(slot_ctrl, slot_ctrl-> parent );
-	      
 	      pw_node_add_listener((struct pw_node *)slot_ctrl -> sod_node, &slot_ctrl -> sod_node_hook, &sod_node_event, slot_ctrl);
+
+	      /* [set param per node ] + volume */
+                 sod_set_volume(slot_ctrl, slot_ctrl-> parent );
 
 	      }  
       } 

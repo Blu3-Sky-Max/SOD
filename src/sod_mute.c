@@ -45,7 +45,7 @@ void sod_mute_app_for_mic(sod_info *mic_p, sod_mic *sod_mic){
 void sod_auto_unmute_a(sod_info *mic_p, sod_mic *sod_mic){ 
 
   
-	 if (  mic_p != NULL && mic_p -> n_counter != 0   && sod_mic ->  mic_last_state != PW_NODE_STATE_RUNNING && mic_p ){ 
+	 if (  mic_p != NULL && mic_p -> n_counter != 0   && sod_mic ->  mic_last_state != PW_NODE_STATE_RUNNING ){ 
 
 		 for ( size_t i=mic_p -> n_counter;  i -- > 0 ; ) { 
 			 sod_app_handler *T_ctrl = mic_p -> sod_node_tracker[i];
@@ -76,9 +76,6 @@ void sod_auto_unmute_a(sod_info *mic_p, sod_mic *sod_mic){
 
 
 } 
-
-
-
 
 
 
