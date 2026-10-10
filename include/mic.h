@@ -9,9 +9,11 @@
 
 
 
-void sod_mute_app_for_mic(sod_info *mic_p, sod_mic *sod_mic);
 
-void sod_auto_unmute_a (sod_info *mic_p, sod_mic *sod_mic);
+
+
+
+void sod_mic_apply_profile(sod_mic *ptr, _Bool status ); 
 
 void sod_mic_remover (void *data, uint32_t id);
 
