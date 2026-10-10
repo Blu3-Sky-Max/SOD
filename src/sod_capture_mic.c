@@ -1,5 +1,65 @@
 #include "blu3.h" 
-#include "capture.h" 
+#include "capture.h"
+
+
+#define DEBUG	
+
+/* ignore the pulse  volume control (flooding)  */
+const char *capture_ignore = "PulseAudio Volume Control" ;
+
+
+ /* [capture remover and resize] */ 
+void sod_capture_remover(void *user_data, uint32_t id){ 
+
+	sod_info *data = user_data;
+
+   for ( uint32_t i=0; i < data -> n_capture; i++){ 
+          sod_capture *rm = data -> captures[i];
+
+	 if( !rm || rm -> id != id)
+		continue; 
+#ifdef DEBUG
+	 sod_error("removing capture -> capture id:%i capture name: %s\n\n", rm -> id, rm -> Node_name);
+#endif 
+	 if ( rm -> id == id){ 
+
+		 if (rm -> capture_last_state == PW_NODE_STATE_RUNNING &&  data -> capture_running > 0){ 
+			rm -> capture_last_state = PW_NODE_STATE_SUSPENDED; 
+		       
+			if (data -> capture_running > 0) 
+				
+				data -> capture_running--; 
+			
+			if ( data -> capture_running == 0) 	       
+				sod_auto_unmute_a(data, rm);
+		 } 
+
+                  if ( rm -> capture_db_timer) 
+			  pw_loop_destroy_source( rm -> sod_capture_loop , rm  -> capture_db_timer);
+
+                 spa_hook_remove(&rm ->  sod_capture_listener);
+                 pw_proxy_destroy((struct pw_proxy *)rm -> sod_capture_node);
+
+
+		 uint32_t m_resize= data -> n_capture -1;
+
+		  if ( i != m_resize) 
+
+			  data -> captures[i] = data -> captures[m_resize]; 
+		  data -> captures[m_resize] = NULL; 
+
+		   memset(rm, 0, sizeof(*rm));
+
+		   free (rm);
+
+		  data -> n_capture --; 
+		  break; 
+	 }  
+
+   } 
+}    
+
+
 
 
 
@@ -11,18 +71,40 @@ struct timespec capture_debounce_time = {
 
 
 static void capture_db_func (void *data_,uint64_t exp ){
-       sod_capture *data= data_;	
+      
+       	sod_capture *data= data_;	
 
            if ( data -> capture_last_state != data -> capture_pending_state ) { 
+
+		   /* first state is to keep track of running -> id -> running
+		    * so capturing running does not ++ for same node  */ 
+
+		   int first_state =  data -> capture_last_state; 
+
 		   data -> capture_last_state = data -> capture_pending_state;
 
 		  sod_print("Node capture name: %s\nNode capture role:%s\nNode capture media_class: %s\nNode id:%u\nNode app Id: %s\nNode capture Last_state: %s\nMonitor:%s\n\n"
 				  , data -> Node_name, data -> Media_role, data -> Media_class, data -> id,\
 				  data -> Application_id, pw_node_state_as_string(data -> capture_last_state), data -> Monitor );
 
+	    if ( data -> capture_last_state == PW_NODE_STATE_RUNNING && first_state != PW_NODE_STATE_RUNNING ){ 
+		  data -> capture_parent -> capture_running++; 
+
+		    sod_mute_app_for_mic(data -> capture_parent, data);
+	    } 
+
+	    else
+		    if (first_state == PW_NODE_STATE_RUNNING && data -> capture_last_state != PW_NODE_STATE_RUNNING){
+
+			   if( data -> capture_parent -> capture_running > 0) 
+			   data -> capture_parent -> capture_running--; 
+
+			  if ( data -> capture_parent  -> capture_running == 0)  
+				  sod_auto_unmute_a(data -> capture_parent, data);  
+	  
 	   }   
 
-
+     } 
 
 } 
 static void sod_capture_event_info (void *data, const struct pw_node_info *info) { 
@@ -113,6 +195,8 @@ void sod_mic_capture(const struct spa_dict *props,uint32_t id,  sod_info *user_d
 		 cap -> sod_capture_loop = user_data -> sod_cached_loop; 
 
 		 cap -> capture_db_timer = pw_loop_add_timer(cap -> sod_capture_loop, capture_db_func, cap);
+
+		 cap -> capture_parent = user_data; 
 		 
                  cap -> capture_pending_state = cap -> capture_last_state =  PW_NODE_STATE_CREATING; 
 
@@ -124,4 +208,8 @@ void sod_mic_capture(const struct spa_dict *props,uint32_t id,  sod_info *user_d
 
     } 
 
-} 
+}
+
+
+
+

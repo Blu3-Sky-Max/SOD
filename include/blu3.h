@@ -16,8 +16,7 @@
 #include <spa/pod/iter.h>
 #include <pipewire/pipewire.h> 
 #include <spa/param/audio/format-utils.h>
-#include "capture.h" 
-
+#include "capture.h"
 
 
 /* [EACH APP PROXY HANDLER] */
@@ -56,7 +55,7 @@ typedef struct {
 
         char media_name[1024];           /* add media name to know name given by node_name */ 
 
-       _Bool     sod_mic_auto_mt;            /* store what mic muted */ 
+       _Bool     sod_capture_auto_mt;            /* store what mic muted */ 
 	
 
 }sod_app_handler;
@@ -126,6 +125,7 @@ typedef struct sod_info_s{
   
    uint32_t  n_capture;  
   
+   uint8_t    capture_running;
 
 } sod_info; 
 
@@ -139,13 +139,14 @@ typedef struct sod_info_s{
 extern struct timespec debounce_time;  
 
 
-
 void  sod_apply_profile(const struct sod_profile *p , sod_info * data);
 
 
 void sod_set_volume(sod_app_handler *sod_data, sod_info *info );
 
 void sod_mute_node(sod_app_handler *slot_mt, bool muted  );
+
+void sod_capture_w(sod_info * , sod_app_handler * );
 
 
 /* [EXIT CODE] */ 

@@ -54,14 +54,11 @@ typedef struct {
 #define CAP_MAX_SIZE 15 
 
 
+void sod_auto_unmute_a ( struct sod_info_s * , sod_capture * );
 
-/* ignore the pulse  volume control (flooding)  */
-const char *capture_ignore = "PulseAudio Volume Control" ;
+void sod_mute_app_for_mic( struct sod_info_s *cap, sod_capture *sod_c);
 
-
-
-
-
+void sod_capture_remover(void *user_data, uint32_t id);
 
 
 #endif

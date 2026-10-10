@@ -10,7 +10,8 @@ static void sod_newest_node(sod_app_handler  *running) {
 
 	sod_info *newest_node= running -> parent; 
 
-	if (  running -> sod_auto_mt == TRUE  || running -> sod_auto_mt == FALSE){ 
+	if ( ( running -> sod_auto_mt == TRUE  || running -> sod_auto_mt == FALSE) &&  running ->\
+			sod_capture_auto_mt ==  FALSE && newest_node -> capture_running == 0) { 
 		sod_mute_node(running, FALSE); 
 		running -> sod_auto_mt = FALSE; 
 	} 
@@ -52,7 +53,8 @@ static void sod_unmuted_auto_mt( sod_info *restore_mt){
 
 
 		 sod_app_handler * chek = restore_mt ->   sod_node_tracker [i];
-		 if ( chek != NULL &&  chek -> sod_auto_mt && chek -> last_state ==PW_NODE_STATE_RUNNING){ 
+		 if ( chek != NULL &&  chek -> sod_auto_mt && chek -> last_state ==PW_NODE_STATE_RUNNING \
+				 && restore_mt -> sod_node_tracker[i] -> sod_capture_auto_mt == FALSE){ 
 			  sod_mute_node(chek, FALSE);
 			  chek -> sod_auto_mt = FALSE;
 			 break;  
@@ -121,6 +123,9 @@ static void db_s(void *data,uint64_t expirations ){
 
 		  pw_node_state_as_string(sod_db -> last_state),sod_db -> Node_name, sod_db -> Media_class,\
 		  sod_db -> media_name);
+
+               /* [mic first check] */ 
+             sod_capture_w(sod_db ->parent , sod_db);
 
                
              if ( sod_db -> last_state == PW_NODE_STATE_RUNNING)
@@ -215,9 +220,13 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 	      }
 
 	 
-	  /* [mic remover]  */ 
+	  /* [mic source remover] + [resize]  */ 
 
 	     sod_mic_remover(user_data , id); 
+
+	     /* [mic Input remover] + [resize] */
+	    sod_capture_remover(user_data, id);
+
 
 } 
 
@@ -484,7 +493,7 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 	      
 	                 slot_ctrl -> sod_auto_mt=FALSE;
 
-			 slot_ctrl -> sod_mic_auto_mt = FALSE; 
+			 slot_ctrl -> sod_capture_auto_mt = FALSE; 
 
 	      pw_node_add_listener((struct pw_node *)slot_ctrl -> sod_node, &slot_ctrl -> sod_node_hook, &sod_node_event, slot_ctrl);
 
