@@ -10,14 +10,13 @@ static void sod_newest_node(sod_app_handler  *running) {
 
 	sod_info *newest_node= running -> parent; 
 
-	if ( ( running -> sod_auto_mt == TRUE  || running -> sod_auto_mt == FALSE) &&  running ->\
-			sod_capture_auto_mt ==  FALSE && newest_node -> capture_running == 0) { 
+	if ( newest_node != NULL &&  running -> sod_capture_auto_mt ==  FALSE && newest_node -> capture_running == 0) { 
 		sod_mute_node(running, FALSE); 
 		running -> sod_auto_mt = FALSE; 
 	} 
 
 	 /* mute every other tracked node that is still running */
-	for ( size_t i=0; i< newest_node -> n_counter; i++){ 
+	for ( size_t i=0; newest_node != NULL && i< newest_node -> n_counter; i++){ 
              sod_app_handler *other = newest_node -> sod_node_tracker[i]; 
 
 	     if(other == running) 
