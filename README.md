@@ -43,7 +43,7 @@ the profile has the mic off.
  
 
 1. SOD connects to PipeWire and listens on the registry for new global objects.
-2. Each new node is checked against `media.class == "Stream/Output/Audio"`, "Stream/Input/Audio", "Audio/Source" and the `tracked_apps[]` list.
+2. Each new node is checked against `media.class == "Stream/Output/Audio"`, `"Stream/Input/Audio"`,` "Audio/Source"` and the `tracked_apps[]` list.
 3. A matching node is bound and given a listener. SOD reads its current `Props` (volume, mute) and applies the profile volume once at bind time.
 4. Node state changes go through a per-node debounce timer on PipeWire's own event loop. When a state settles, SOD decides whether to duck other nodes or restore them.
 5. Muting uses `pw_node_set_param()` with a mute-only `Props` pod (`sod_mute.c`). PipeWire has no generic pause, so "pause" means mute.
