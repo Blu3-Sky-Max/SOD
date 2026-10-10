@@ -27,28 +27,29 @@ SOD connects to PipeWire through its native C API, tracks the audio streams of s
 
 | Profile   | Volume | Microphone | 
 |-----------|--------|------------|
-| `library` | 80%    |            |
-| `office`  | 30%    |            |
-| `focus`   | 45%    |            |
-| `meeting` | 60%    |            |
-| `night`   | 10%    |            | 
-| `gaming`  | 100%   |            |
+| `library` | 80%    |   off      |
+| `office`  | 30%    |   on       |
+| `focus`   | 45%    |   on       |
+| `meeting` | 60%    |   on       |
+| `night`   | 10%    |   off      | 
+| `gaming`  | 100%   |   on       |
 
-Profile values are defined in `include/profile.h`.
 
-> Microphone control is not applied yet. 
-
+Profile values are defined in `include/profile.h`. The microphone setting
+is applied once when an `Audio/Source` node is bound: the mic is muted if
+the profile has the mic off.
 
 ## How It Works
  
 
 1. SOD connects to PipeWire and listens on the registry for new global objects.
-2. Each new node is checked against `media.class == "Stream/Output/Audio"` and the `tracked_apps[]` list.
+2. Each new node is checked against `media.class == "Stream/Output/Audio"`, `"Stream/Input/Audio"`, `"Audio/Source"` and the `tracked_apps[]` list.
 3. A matching node is bound and given a listener. SOD reads its current `Props` (volume, mute) and applies the profile volume once at bind time.
 4. Node state changes go through a per-node debounce timer on PipeWire's own event loop. When a state settles, SOD decides whether to duck other nodes or restore them.
 5. Muting uses `pw_node_set_param()` with a mute-only `Props` pod (`sod_mute.c`). PipeWire has no generic pause, so "pause" means mute.
 6. When a node is removed, SOD destroys its timer and listener, frees the slot, and keeps the tracker array packed.
-
+7. Mic-aware muting: apps that capture audio (`Stream/Input/Audio`, such as a  browser using the microphone) trigger auto-mute of playing apps. Apps restore when the last capture stream stops. Source/Hardware mic nodes only report state and never trigger mutes.
+ 
 The read path (`sod_node_param`) is strictly read-only. All writes go through dedicated functions, which avoids feedback loops between the parameter callback and PipeWire.
 
 ## Project layout
