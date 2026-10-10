@@ -27,12 +27,12 @@ SOD connects to PipeWire through its native C API, tracks the audio streams of s
 
 | Profile   | Volume | Microphone | 
 |-----------|--------|------------|
-| `library` | 80%    |   OFF      |
-| `office`  | 30%    |   ON       |
-| `focus`   | 45%    |   ON       |
-| `meeting` | 60%    |   ON       |
-| `night`   | 10%    |   OFF      | 
-| `gaming`  | 100%   |   ON       |
+| `library` | 80%    |   off      |
+| `office`  | 30%    |   on       |
+| `focus`   | 45%    |   on       |
+| `meeting` | 60%    |   on       |
+| `night`   | 10%    |   off      | 
+| `gaming`  | 100%   |   on       |
 
 
 Profile values are defined in `include/profile.h`. The microphone setting
