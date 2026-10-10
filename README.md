@@ -48,10 +48,7 @@ the profile has the mic off.
 4. Node state changes go through a per-node debounce timer on PipeWire's own event loop. When a state settles, SOD decides whether to duck other nodes or restore them.
 5. Muting uses `pw_node_set_param()` with a mute-only `Props` pod (`sod_mute.c`). PipeWire has no generic pause, so "pause" means mute.
 6. When a node is removed, SOD destroys its timer and listener, frees the slot, and keeps the tracker array packed.
-7.  **Mic-aware muting:** apps that capture audio (`Stream/Input/Audio`, such as a
-  browser using the microphone) trigger auto-mute of playing apps. Apps
-  restore when the last capture stream stops. Hardware mic nodes only
-  report state and never trigger mutes.
+7. Mic-aware muting: apps that capture audio (`Stream/Input/Audio`, such as a  browser using the microphone) trigger auto-mute of playing apps. Apps restore when the last capture stream stops. Source/Hardware mic nodes only report state and never trigger mutes.
  
 The read path (`sod_node_param`) is strictly read-only. All writes go through dedicated functions, which avoids feedback loops between the parameter callback and PipeWire.
 
