@@ -96,8 +96,12 @@ struct timespec debounce_time = {
 /* [Apps tracking ] */
 const char *sod_track_app[] = {
     "Google Chrome",
+
     "Firefox",
-    "Boxes"
+
+    "Boxes", 
+
+    "spotify" 
 };
 
 
