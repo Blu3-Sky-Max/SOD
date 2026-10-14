@@ -13,26 +13,34 @@ void sod_capture_remover(void *user_data, uint32_t id){
 
 	sod_info *data = user_data;
 
+
    for ( uint32_t i=0; i < data -> n_capture; i++){ 
           sod_capture *rm = data -> captures[i];
 
 	 if( !rm || rm -> id != id)
-		continue; 
-#ifdef DEBUG
-	 sod_error("removing capture -> capture id:%i capture name: %s\n\n", rm -> id, rm -> Node_name);
-#endif 
+		continue;
+
+
 	 if ( rm -> id == id){ 
 
-		 if (rm -> capture_last_state == PW_NODE_STATE_RUNNING &&  data -> capture_running > 0){ 
-			rm -> capture_last_state = PW_NODE_STATE_SUSPENDED; 
-		       
+		 if (rm -> capture_last_state == PW_NODE_STATE_RUNNING &&  data -> capture_running > 0){
+			rm -> capture_last_state = rm -> capture_pending_state; 
+		             
+
 			if (data -> capture_running > 0) 
 				
 				data -> capture_running--; 
 			
 			if ( data -> capture_running == 0) 	       
 				sod_auto_unmute_a(data, rm);
-		 } 
+		 }
+#ifdef DEBUG
+		 
+		 sod_error("\nremoving capture -> capture id: %u\ncapture name: %s\ncapture Media class: %s\ncapture last state:%s\n\n",\
+				 rm -> id,rm -> Node_name, rm -> Media_class, pw_node_state_as_string (rm -> capture_last_state) );
+
+#endif
+
 
                   if ( rm -> capture_db_timer) 
 			  pw_loop_destroy_source( rm -> sod_capture_loop , rm  -> capture_db_timer);
@@ -70,7 +78,7 @@ struct timespec capture_debounce_time = {
 }; 
 
 
-static void capture_db_func (void *data_,uint64_t exp ){
+void capture_db_func (void *data_,uint64_t exp ){
       
        	sod_capture *data= data_;	
 

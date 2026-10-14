@@ -53,6 +53,7 @@ typedef struct {
 
 #define CAP_MAX_SIZE 15 
 
+void capture_db_func (void *data_,uint64_t exp ); 
 
 void sod_auto_unmute_a ( struct sod_info_s * , sod_capture * );
 
