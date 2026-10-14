@@ -17,6 +17,8 @@
 #include <pipewire/pipewire.h> 
 #include <spa/param/audio/format-utils.h>
 #include "capture.h"
+#include <signal.h>
+#include <pthread.h>
 
 
 /* [EACH APP PROXY HANDLER] */
@@ -131,10 +133,13 @@ typedef struct sod_info_s{
 
 
 
+#define SOD_PUT puts("")
 
 #define sod_error(fmt, ...)   fprintf(stderr,RED fmt RESET, ##__VA_ARGS__)
+
 #define  sod_print(...)  fprintf(stdout,__VA_ARGS__) 
- /* debounce timer */ 
+
+/* debounce timer */ 
 
 extern struct timespec debounce_time;  
 
@@ -147,6 +152,8 @@ void sod_set_volume(sod_app_handler *sod_data, sod_info *info );
 void sod_mute_node(sod_app_handler *slot_mt, bool muted  );
 
 void sod_capture_w(sod_info * , sod_app_handler * );
+
+void sod_signal( void * data, int signal_num); 
 
 
 /* [EXIT CODE] */ 

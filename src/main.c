@@ -2,9 +2,12 @@
 #include "mic.h"
 
 
+
 /* 
 #define DEBUG
 */
+
+
 
 static void sod_newest_node(sod_app_handler  *running) {
 
@@ -534,6 +537,16 @@ static const struct pw_registry_events  sod_registry_events = {
 
 int main(int __argc, char *__argv[]) { 
 
+sigset_t set; 
+
+sigemptyset(&set); 
+
+sigaddset(&set, SIGINT); 
+
+sigaddset(&set,SIGTERM);
+
+pthread_sigmask(SIG_BLOCK, &set, NULL); 
+
 sod_info sod_data; 
  pw_init(NULL, NULL);
 
@@ -592,6 +605,11 @@ sod_data.sod_cached_loop=pw_main_loop_get_loop(sod_data.sod_loop);
 sod_data.sod_context=pw_context_new(pw_main_loop_get_loop(sod_data.sod_loop),NULL,0);
 sod_data. sod_core=pw_context_connect(sod_data.sod_context,NULL,0); 
 
+ 
+struct spa_source *sod_SigInt= pw_loop_add_signal(sod_data.sod_cached_loop, SIGINT, sod_signal, sod_data.sod_loop); 
+struct spa_source *sod_SigTerm= pw_loop_add_signal(sod_data.sod_cached_loop, SIGTERM, sod_signal, sod_data.sod_loop);
+  
+
 /* verify if proxy is allocated  */
 
  if (sod_data.sod_core == NULL){ 
@@ -608,15 +626,22 @@ pw_registry_add_listener(sod_data.sod_registry,&sod_data.sod_registry_listener, 
 
 pw_main_loop_run(sod_data.sod_loop); 
 
+ 
+spa_hook_remove(&sod_data.sod_registry_listener);
+pw_proxy_destroy((struct pw_proxy *)sod_data.sod_registry);
+pw_core_disconnect(sod_data.sod_core);
+pw_context_destroy(sod_data.sod_context);
+pw_loop_destroy_source (sod_data.sod_cached_loop, sod_SigInt); 
+pw_loop_destroy_source (sod_data.sod_cached_loop, sod_SigTerm); 
+ pw_main_loop_destroy ( sod_data.sod_loop); 
+
+
+ free(sod_data.sod_node_tracker);
+sod_data.sod_node_tracker = NULL;
 
 
 
 
 
+}
 
-
-
-
-
-
-} 
