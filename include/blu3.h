@@ -21,6 +21,7 @@
 #include <pthread.h>
 
 
+struct sink;  
 /* [EACH APP PROXY HANDLER] */
 
 typedef struct {
@@ -128,6 +129,8 @@ typedef struct sod_info_s{
    uint32_t  n_capture;  
   
    uint8_t    capture_running;
+
+   struct sink *sod_sink; 
 
 } sod_info; 
 

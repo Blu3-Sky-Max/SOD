@@ -1,6 +1,6 @@
 #include "blu3.h"
 #include "mic.h"
-
+#include "sink.h" 
 
 
 /* 
@@ -233,6 +233,10 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 	     /* [mic Input remover] + [resize] */
 	    sod_capture_remover(user_data, id);
 
+	    /* [sink reset] */ 
+
+	    sod_sink_remove(user_data, id); 
+
 
 } 
 
@@ -245,7 +249,9 @@ static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint
 /* need some properties to get the volume and mute and unmute status
  * passing the address of param to the properties here to get 
  * the info of each node   
- */ 
+ */
+
+     if ( id == SPA_PARAM_Props && param != NULL ){  
   
      struct spa_pod_prop *new_prop; 
      struct spa_pod_object *new_param_obj=(struct spa_pod_object *)param; 
@@ -285,7 +291,7 @@ static void sod_node_param(void *data, int seq,uint32_t id, uint32_t index, uint
 
 
 
-
+     } 
 }
 
 }
@@ -394,7 +400,10 @@ static const struct pw_node_events sod_node_event = {
 
 static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions, const char *type, uint32_t version,const struct spa_dict *props){ 
      sod_info *sod_data=user_data;
-    _Bool App_match, already_tracked; 
+    _Bool App_match, already_tracked;
+
+
+    
      
      if ( strcmp(type,PW_TYPE_INTERFACE_Node) == 0) { 
 	      
@@ -411,8 +420,13 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
         /* [microphone capture] */ 
     if (Media_check != NULL && Node_name != NULL && strcmp (Media_check, "Stream/Input/Audio") == 0  )
 		  sod_mic_capture(props , id , sod_data , type);   
-    
-    
+                
+
+          /* [audio sink] */     
+    if  ( Media_check !=NULL && strcmp(Media_check, "Audio/Sink") == 0) 
+	    Audio_sink(props, id, sod_data);
+                
+
      App_match=already_tracked=FALSE;
 
       for (int i=0; i< TRACK_APP_SIZE; i++)
@@ -506,6 +520,8 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 	      /* [set param per node ] + volume */
                  sod_set_volume(slot_ctrl, slot_ctrl-> parent );
 
+
+
 	      }  
       } 
 
@@ -596,6 +612,28 @@ if ( (char_c=getopt_long(__argc,__argv,"p:", sod_option, NULL) ) !=-1)  {
 
   }  
 
+sod_sink *sink_pri = calloc (1,sizeof *sink_pri); 
+
+ if ( !sink_pri){ 
+	 sod_print("Sorry can't allocate for sink\n"); 
+	 
+	 return ALLOC_FAIL; 
+ } 
+
+ /* index and device can be zero but can't be negative */ 
+
+sink_pri -> sink_index = -1; 
+
+sink_pri -> sink_device = -1; 
+
+sink_pri -> sink_ready=FALSE; 
+
+sink_pri -> parent= &sod_data; 
+
+
+sink_pri -> device_id=0;  
+
+sod_data.sod_sink = sink_pri; 
 
 
  sod_apply_profile(&profiles[Match_index] , &sod_data) ; 

@@ -21,11 +21,11 @@
 #define _OPERATING_VOLUME       
 
 #define Library_Vol  80 
-#define Focus_Vol    45 
+#define Focus_Vol    28 
 #define Office_Vol   60
-#define Night_Vol    10
+#define Night_Vol    5
 #define Meeting_Vol  60 
-#define Gaming_Vol   100
+#define Gaming_Vol   123
 
 
 
