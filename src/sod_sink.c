@@ -1,10 +1,37 @@
 #include "sink.h" 
 
 
+void sod_sink_remove(void *data, uint32_t id) { 
+
+          sod_sink *check=data;
+	 
+	  if (check  &&  check -> id == id) { 
+
+
+		  if ( check -> dev_node){ 
+			  spa_hook_remove(&check -> dev_listener);
+			  pw_proxy_destroy((struct pw_proxy *)check -> dev_node);
+		  } 
+
+		  sod_sink_reset(check); 
+
+		  check -> id =0; 
+		  check -> device_id =0; 
+ 
+	  } 
+
+
+
+
+} 	
+
+/* [emit param] */ 
 
 static void sod_sink_param(void *data, int seq,  uint32_t id, uint32_t index, uint32_t next,const struct spa_pod *param){ 
      
-	sod_sink *user_data =data; 
+	sod_sink *user_data =data;
+
+     int32_t sod_index, sod_device;  	
 
 	if ( SPA_PARAM_Route == id  && param != NULL  ) { 
 
@@ -18,25 +45,31 @@ static void sod_sink_param(void *data, int seq,  uint32_t id, uint32_t index, ui
 			switch ( new_prop -> key) { 
 				case  
 					SPA_PARAM_ROUTE_index: { 
-						int32_t sod_index; 
+						int32_t sod_indx; 
 						
-						int check=spa_pod_get_int( &new_prop -> value,&sod_index);
+						int check=spa_pod_get_int( &new_prop -> value,&sod_indx);
 
 						if( check >=0) 
   
-						sod_print("sod_index: %i\n", sod_index); 
+						sod_print("sod_index: %i\n", sod_indx);
+
+						 sod_index = sod_indx; 
+					
 						break; 
 					} 
 				
 				case 
 					SPA_PARAM_ROUTE_device: { 
-						int32_t sod_device;
+						int32_t sod_dev;
 
-						int check=spa_pod_get_int(&new_prop -> value,&sod_device);
+						int check=spa_pod_get_int(&new_prop -> value,&sod_dev);
 
 						if (check >=0) 
 
-						sod_print("sod_device: %i\n", sod_device);
+						sod_print("sod_device: %i\n", sod_dev);
+
+						sod_device = sod_dev; 
+
 						break; 
 					}
 				case
@@ -99,9 +132,18 @@ static void sod_sink_param(void *data, int seq,  uint32_t id, uint32_t index, ui
 
 	} 	
 
+    if ( sod_index  >=0 &&  sod_device >=0 && user_data  -> sink_ready != TRUE){ 
+	    
+	    user_data -> sink_index = sod_index;
+
+	    user_data -> sink_device = sod_device;
 
 
+	    user_data -> sink_ready = TRUE; 
 
+	    sod_sink_set_volume( user_data, user_data -> parent ->  T_volume);
+
+    } 
 
 
 } 
@@ -154,8 +196,9 @@ void Audio_sink ( const struct spa_dict *props, uint32_t id , sod_info *data ) {
 
 	
 	 long unsigned S_id= strtoul(ID, NULL, 10); 
+          
 
-	 sod_sink * D_c = calloc (1, sizeof * D_c);
+	 sod_sink * D_c =  data -> sod_sink;
    
 
 	  if ( !D_c) 
@@ -169,6 +212,8 @@ void Audio_sink ( const struct spa_dict *props, uint32_t id , sod_info *data ) {
 
 	 D_c -> device_id = S_id; 
 
+	 
+
 	    if (Node_D) 
 		    strncpy(D_c  -> Node_description, Node_D , sizeof(D_c -> Node_description) -1);
 
@@ -177,11 +222,14 @@ void Audio_sink ( const struct spa_dict *props, uint32_t id , sod_info *data ) {
 
 	    pw_device_add_listener(D_c -> dev_node, & D_c -> dev_listener,&sod_sink_events, D_c); 
 
+
+
 #ifdef DEBUG 
    sod_print("Device Node ID: %i\nDevice Node name: %s\nDevice Node Description:%s\nDevice id: %lu\n\n",id, node_name,Node_D,S_id);  	
 
 #endif
 } 
+
 
 
 
