@@ -233,6 +233,10 @@ static void sod_registry_remover(void *user_data, uint32_t id){
 	     /* [mic Input remover] + [resize] */
 	    sod_capture_remover(user_data, id);
 
+	    /* [sink reset] */ 
+
+	    sod_sink_remove(user_data, id); 
+
 
 } 
 
@@ -516,6 +520,8 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 	      /* [set param per node ] + volume */
                  sod_set_volume(slot_ctrl, slot_ctrl-> parent );
 
+
+
 	      }  
       } 
 
@@ -606,6 +612,28 @@ if ( (char_c=getopt_long(__argc,__argv,"p:", sod_option, NULL) ) !=-1)  {
 
   }  
 
+sod_sink *sink_pri = calloc (1,sizeof *sink_pri); 
+
+ if ( !sink_pri){ 
+	 sod_print("Sorry can't allocate for sink\n"); 
+	 
+	 return ALLOC_FAIL; 
+ } 
+
+ /* index and device can be zero but can't be negative */ 
+
+sink_pri -> sink_index = -1; 
+
+sink_pri -> sink_device = -1; 
+
+sink_pri -> sink_ready=FALSE; 
+
+sink_pri -> parent= &sod_data; 
+
+
+sink_pri -> device_id=0;  
+
+sod_data.sod_sink = sink_pri; 
 
 
  sod_apply_profile(&profiles[Match_index] , &sod_data) ; 
