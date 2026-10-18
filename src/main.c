@@ -517,8 +517,6 @@ static void sod_registry_func(void *user_data, uint32_t id, uint32_t permissions
 
 	      pw_node_add_listener((struct pw_node *)slot_ctrl -> sod_node, &slot_ctrl -> sod_node_hook, &sod_node_event, slot_ctrl);
 
-	      /* [set param per node ] + volume */
-                 sod_set_volume(slot_ctrl, slot_ctrl-> parent );
 
 
 
