@@ -20,12 +20,15 @@
 
 #define _OPERATING_VOLUME       
 
+/* volume range  0.015 - 153 if beyond, sod will control it */ 
+
+
 #define Library_Vol  80 
 #define Focus_Vol    28 
 #define Office_Vol   60
-#define Night_Vol    5
+#define Night_Vol    0.015
 #define Meeting_Vol  60 
-#define Gaming_Vol   123
+#define Gaming_Vol   153
 
 
 
