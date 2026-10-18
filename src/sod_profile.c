@@ -11,7 +11,7 @@
 
 void  sod_apply_profile(const struct sod_profile *p , sod_info * data){ 
 
-	 if ( p -> Volume > 1 ) { 
+	 if ( p -> Volume >= 1 ) { 
 		  data -> T_mic_on= p -> mic_on;
 		  data -> T_volume = p -> Volume / 100.0f; 
 	 } 
@@ -66,7 +66,18 @@ void sod_mic_apply_profile(sod_mic *ptr, _Bool status ){
 void sod_sink_set_volume(sod_sink *p, float watch_) { 
 
 
-	if ( p != NULL && p -> sink_index >= 0 && p -> sink_device >=0 && p -> sink_ready ){ 
+	if ( p != NULL && p -> sink_index >= 0 && p -> sink_device >=0 && p -> sink_ready ){
+
+
+	/* [ control watch_ for lowest volume and highest volume] */ 
+
+	if ( watch_ <= 0.015) 
+	 watch_ = 0.015; 
+
+
+	if ( watch_ >= 1.53 ) 
+		watch_= 1.53; 
+
 		
 
 	uint8_t buffer[1024];
