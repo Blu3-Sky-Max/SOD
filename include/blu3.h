@@ -130,7 +130,11 @@ typedef struct sod_info_s{
   
    uint8_t    capture_running;
 
-   struct sink *sod_sink; 
+   struct sink **sod_sink;
+
+   uint32_t n_sod_sink; 
+
+    
 
 } sod_info; 
 
@@ -157,6 +161,9 @@ void sod_mute_node(sod_app_handler *slot_mt, bool muted  );
 void sod_capture_w(sod_info * , sod_app_handler * );
 
 void sod_signal( void * data, int signal_num); 
+
+
+
 
 
 /* [EXIT CODE] */ 

@@ -9,7 +9,7 @@
 #include "blu3.h" 
 
 
-
+#define SINK_MAX  16 
 
 
 typedef struct sink { 
