@@ -610,28 +610,23 @@ if ( (char_c=getopt_long(__argc,__argv,"p:", sod_option, NULL) ) !=-1)  {
 
   }  
 
-sod_sink *sink_pri = calloc (1,sizeof *sink_pri); 
 
- if ( !sink_pri){ 
+
+sod_data.sod_sink = calloc (SINK_MAX,sizeof (*sod_data.sod_sink)); 
+
+ if ( !sod_data.sod_sink){ 
 	 sod_print("Sorry can't allocate for sink\n"); 
 	 
 	 return ALLOC_FAIL; 
  } 
 
- /* index and device can be zero but can't be negative */ 
-
-sink_pri -> sink_index = -1; 
-
-sink_pri -> sink_device = -1; 
-
-sink_pri -> sink_ready=FALSE; 
-
-sink_pri -> parent= &sod_data; 
 
 
-sink_pri -> device_id=0;  
 
-sod_data.sod_sink = sink_pri; 
+
+
+
+
 
 
  sod_apply_profile(&profiles[Match_index] , &sod_data) ; 

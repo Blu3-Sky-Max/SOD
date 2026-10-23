@@ -1,27 +1,51 @@
 #include "sink.h" 
 
 
+
+
+ /* [sink size remover] + [sink_size resetter] */
+
 void sod_sink_remove(void *data, uint32_t id) { 
 
-          sod_sink *check=data;
+          sod_info *check=data;
 	 
-	  if (check  &&  check -> id == id) { 
+	  for ( uint32_t i=0; check != NULL && check ->  n_sod_sink > 0 && i < check -> n_sod_sink; i++){ 
+		  
+		  sod_sink *T = check  -> sod_sink[i]; 
+		  
+		  if ( T  &&  T->  id  == id) { 
+#ifdef DEBUG
+			  sod_error("REMOVING SINK ID: %i\n\n", T -> id); 
+#endif 
 
-
-		  if ( check -> dev_node){ 
-			  spa_hook_remove(&check -> dev_listener);
-			  pw_proxy_destroy((struct pw_proxy *)check -> dev_node);
+		  if ( T -> dev_node){ 
+			  spa_hook_remove(& T -> dev_listener);
+			  pw_proxy_destroy((struct pw_proxy *)T -> dev_node);
 		  } 
 
-		  sod_sink_reset(check); 
+		  sod_sink_reset(T); 
 
-		  check -> id =0; 
-		  check -> device_id =0; 
+		  T -> id =0; 
+		  T -> device_id =0; 
+
+		  uint32_t resize = T -> parent -> n_sod_sink - 1; 
+
+		  if ( i != resize) 
+			  check  -> sod_sink[i] = check  -> sod_sink[ resize]; 
+
+		  check  -> sod_sink [resize] = NULL;
+
+		  check  -> n_sod_sink--;  
+
+		  free (T); 
+
+		  break; 
  
 	  } 
 
 
 
+  } 
 
 } 	
 
@@ -198,7 +222,7 @@ void Audio_sink ( const struct spa_dict *props, uint32_t id , sod_info *data ) {
 	 long unsigned S_id= strtoul(ID, NULL, 10); 
           
 
-	 sod_sink * D_c =  data -> sod_sink;
+	 sod_sink * D_c = calloc (1, sizeof *D_c);
    
 
 	  if ( !D_c) 
@@ -212,6 +236,15 @@ void Audio_sink ( const struct spa_dict *props, uint32_t id , sod_info *data ) {
 
 	 D_c -> device_id = S_id; 
 
+	 D_c -> parent = data;
+
+	 D_c -> sink_index = -1; 
+
+	 D_c -> sink_device = -1; 
+
+	 D_c -> sink_ready = FALSE; 
+
+
 	 
 
 	    if (Node_D) 
@@ -220,7 +253,11 @@ void Audio_sink ( const struct spa_dict *props, uint32_t id , sod_info *data ) {
 	    if (node_name) 
 		     strncpy(D_c  -> Node_name, node_name , sizeof(D_c -> Node_name) -1);
 
+
+
 	    pw_device_add_listener(D_c -> dev_node, & D_c -> dev_listener,&sod_sink_events, D_c); 
+
+	    data -> sod_sink[ data -> n_sod_sink ++] = D_c;  
 
 
 
