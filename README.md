@@ -71,7 +71,7 @@ SOD/
 $ git clone https://github.com/Blu3-Sky-Max/SOD.git
 $ cd SOD
 $ make
-$ sudo make install
+$ ./sod --profile <profile name>   #profile name:  such as gaming, night, office, library....
 ```
 
 To remove:
