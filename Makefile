@@ -10,6 +10,8 @@ CFLAGS = -I include -Wall  $(shell pkg-config --cflags --libs libpipewire-0.3)
 
 LIBS=-lm
 
+CFLAGS += -MMD -MP
+
 $(OUTPUT): main.o profile.o mute.o source.o capture.o signal.o sink.o sink_reset.o
 	$(BLU3) -o $(OUTPUT) main.o profile.o mute.o source.o capture.o signal.o sink.o sink_reset.o   $(CFLAGS) $(LIBS)
 
@@ -47,3 +49,6 @@ sink_reset.o : $(SRC)/sod_sink_reset.c
 clean:
 	@rm -f *.o $(OUTPUT)
 
+OBJS = main.o profile.o mute.o source.o capture.o signal.o sink.o sink_reset.o
+
+-include $(OBJS:.o=.d)
