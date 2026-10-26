@@ -55,7 +55,7 @@ static void sod_sink_param(void *data, int seq,  uint32_t id, uint32_t index, ui
      
 	sod_sink *user_data =data;
 
-     int32_t sod_index, sod_device;  	
+     int32_t sod_index, sod_device, direction_;  	
 
 	if ( SPA_PARAM_Route == id  && param != NULL  ) { 
 
@@ -103,6 +103,9 @@ static void sod_sink_param(void *data, int seq,  uint32_t id, uint32_t index, ui
 						if( spa_pod_get_id(&new_prop -> value, &sod_direction) >=0)  
 						    sod_print("Direction: %s\n", sod_direction == SPA_DIRECTION_OUTPUT\
 								    ? "OUTPUT" : "INPUT" ); 
+						direction_=sod_direction; 
+
+					sod_error("%u\n", sod_direction); 	
 						break; 	
 					} 
 				case
@@ -143,7 +146,21 @@ static void sod_sink_param(void *data, int seq,  uint32_t id, uint32_t index, ui
 			
 			break; 
 
-					} 
+					}
+			       case
+				       SPA_PARAM_ROUTE_profile: {  
+				       int32_t profile; 
+				        int check=spa_pod_get_int( &new_prop -> value,&profile);
+
+                                                if( check >=0)
+#ifdef DEBUG
+                                                sod_print("sod_profile: %i\n", profile);
+#endif
+
+                                                break;
+                                        }
+
+
 
 
 
@@ -154,9 +171,11 @@ static void sod_sink_param(void *data, int seq,  uint32_t id, uint32_t index, ui
 
 
 
-	} 	
+	} 
 
-    if ( sod_index  >=0 &&  sod_device >=0 && user_data  -> sink_ready != TRUE){ 
+            	
+              /* [ Sink Output ] */ 
+    if ( sod_index  >=0 &&  sod_device >=0 && user_data  -> sink_ready != TRUE && direction_ == SPA_DIRECTION_OUTPUT){ 
 	    
 	    user_data -> sink_index = sod_index;
 
@@ -213,9 +232,11 @@ void Audio_sink ( const struct spa_dict *props, uint32_t id , sod_info *data ) {
 
 	const char *Node_D= spa_dict_lookup(props, PW_KEY_NODE_DESCRIPTION);
 
-	const char *media_class = spa_dict_lookup(props,PW_KEY_MEDIA_CLASS); 
-	
+	const char *media_class = spa_dict_lookup(props,PW_KEY_MEDIA_CLASS);
+
 	_Bool Match = FALSE;
+
+	const char *card_profile= spa_dict_lookup(props,"card.profile.device"); 
 
  if( node_name != NULL && media_class != NULL && strcmp( media_class, "Audio/Sink") == 0 && ID !=NULL ) { 	
 
@@ -227,6 +248,8 @@ void Audio_sink ( const struct spa_dict *props, uint32_t id , sod_info *data ) {
 
 	 if (Match) 
 		 return; 
+
+	 sod_error("%s\n\n", card_profile); 
 
 	 long unsigned S_id= strtoul(ID, NULL, 10); 
           
