@@ -214,11 +214,20 @@ void Audio_sink ( const struct spa_dict *props, uint32_t id , sod_info *data ) {
 	const char *Node_D= spa_dict_lookup(props, PW_KEY_NODE_DESCRIPTION);
 
 	const char *media_class = spa_dict_lookup(props,PW_KEY_MEDIA_CLASS); 
-
+	
+	_Bool Match = FALSE;
 
  if( node_name != NULL && media_class != NULL && strcmp( media_class, "Audio/Sink") == 0 && ID !=NULL ) { 	
 
-	
+         for ( uint32_t i=0; data -> n_sod_sink !=0 && i < data -> n_sod_sink; i++) 
+            if ( id == data -> sod_sink[i] -> id){  
+	          Match=TRUE; 	 
+		  break; 
+	    } 
+
+	 if (Match) 
+		 return; 
+
 	 long unsigned S_id= strtoul(ID, NULL, 10); 
           
 
