@@ -23,8 +23,8 @@
 /* volume range  0.015 - 153 if beyond, sod will control it */ 
 
 
-#define Library_Vol  80 
-#define Focus_Vol    28 
+#define Library_Vol  40 
+#define Focus_Vol    7 
 #define Office_Vol   60
 #define Night_Vol    0.015
 #define Meeting_Vol  60 
