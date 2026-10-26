@@ -5,8 +5,28 @@
 #define DEBUG	
 
 /* ignore the pulse  volume control (flooding)  */
-const char *capture_ignore = "PulseAudio Volume Control" ;
+ static const char *capture_ignore[] = { 
+       	"PulseAudio Volume Control",
+        "GNOME Settings"
+};
 
+
+
+static bool ignore_unwanted_mic( const char *name){ 
+
+   if (name){ 
+
+	   for (int8_t i=0; i< sizeof capture_ignore / sizeof *capture_ignore; i++) 
+		   if ( strcmp(name, capture_ignore[i]) == 0) 
+			   return TRUE; 
+
+
+   }
+
+
+   return FALSE;
+
+}
 
  /* [capture remover and resize] */ 
 void sod_capture_remover(void *user_data, uint32_t id){ 
@@ -157,7 +177,7 @@ void sod_mic_capture(const struct spa_dict *props,uint32_t id,  sod_info *user_d
 	 const char *stream_monitor = spa_dict_lookup  (props, PW_KEY_STREAM_MONITOR); 
                  
 	  if (Node_name !=NULL && Media_class !=NULL && strcmp("Stream/Input/Audio", Media_class) == 0 &&\
-	   ! strcmp(Node_name, capture_ignore) == 0 ) { 
+	   ignore_unwanted_mic(Node_name) == FALSE) { 
 
 		 for ( uint32_t i=0; i < user_data -> n_capture; i++) 
 			
