@@ -34,8 +34,11 @@ typedef struct sink {
    _Bool    sink_ready; 
 
 
-   struct sod_info_s *parent; 
+   struct sod_info_s *parent;
+   
+   struct spa_source *sink_db_timer;        /* sink debounce timer  (pw shipped now we need db smdh)*/  
 
+   struct pw_loop   *sink_cached_loop_db; 
 
 }sod_sink;
 
@@ -46,6 +49,8 @@ void Audio_sink ( const struct spa_dict *, uint32_t id, sod_info *data);
 void sod_sink_set_volume(sod_sink *p, float watch_); 
 
 
- void sod_sink_remove(void *data, uint32_t id); 
+ void sod_sink_remove(void *data, uint32_t id);
+
+
 
 #endif /* [AUDIO_SINK__] */ 

@@ -2,6 +2,26 @@
 
 
 
+ /* [ debounce timer] */
+static struct timespec db_sink_time = {
+       .tv_sec = 0,
+
+       .tv_nsec= 200 *1000 *1000,
+
+};
+
+
+ /*  [sink debounce ] */ 
+static void sink_db(void *data,uint64_t expirations ){
+
+   sod_sink *user_data = data; 
+
+
+
+    sod_sink_set_volume( user_data, user_data -> parent ->  T_volume);
+
+} 	
+
 
  /* [sink size remover] + [sink_size resetter] */
 
@@ -21,7 +41,11 @@ void sod_sink_remove(void *data, uint32_t id) {
 		  if ( T -> dev_node){ 
 			  spa_hook_remove(& T -> dev_listener);
 			  pw_proxy_destroy((struct pw_proxy *)T -> dev_node);
-		  } 
+		  }
+		  
+		 if ( T -> sink_db_timer) 
+			pw_loop_destroy_source(T -> sink_cached_loop_db,T -> sink_db_timer);
+
 
 		  sod_sink_reset(T); 
 
@@ -49,7 +73,7 @@ void sod_sink_remove(void *data, uint32_t id) {
 
 } 	
 
-/* [emit param] */ 
+                      /* [emit param] */ 
 
 static void sod_sink_param(void *data, int seq,  uint32_t id, uint32_t index, uint32_t next,const struct spa_pod *param){ 
      
@@ -184,9 +208,12 @@ static void sod_sink_param(void *data, int seq,  uint32_t id, uint32_t index, ui
 
 	    user_data -> sink_ready = TRUE; 
 
-	    sod_sink_set_volume( user_data, user_data -> parent ->  T_volume);
+	 //   sod_sink_set_volume( user_data, user_data -> parent ->  T_volume);
+	 
+	    pw_loop_update_timer(user_data -> sink_cached_loop_db, user_data -> sink_db_timer, &db_sink_time,NULL,FALSE);
 
-    } 
+
+    }
 
 
 } 
@@ -236,7 +263,7 @@ void Audio_sink ( const struct spa_dict *props, uint32_t id , sod_info *data ) {
 
 	_Bool Match = FALSE;
 
-	const char *card_profile= spa_dict_lookup(props,"card.profile.device"); 
+//	const char *card_profile= spa_dict_lookup(props,"card.profile.device"); 
 
  if( node_name != NULL && media_class != NULL && strcmp( media_class, "Audio/Sink") == 0 && ID !=NULL ) { 	
 
@@ -249,7 +276,6 @@ void Audio_sink ( const struct spa_dict *props, uint32_t id , sod_info *data ) {
 	 if (Match) 
 		 return; 
 
-	 sod_error("%s\n\n", card_profile); 
 
 	 long unsigned S_id= strtoul(ID, NULL, 10); 
           
@@ -274,7 +300,11 @@ void Audio_sink ( const struct spa_dict *props, uint32_t id , sod_info *data ) {
 
 	 D_c -> sink_device = -1; 
 
-	 D_c -> sink_ready = FALSE; 
+	 D_c -> sink_ready = FALSE;
+
+	 D_c -> sink_cached_loop_db = data -> sod_cached_loop; 
+
+	D_c -> sink_db_timer= pw_loop_add_timer( D_c -> sink_cached_loop_db ,sink_db, D_c); 
 
 
 	 
