@@ -27,9 +27,9 @@ typedef struct sink {
    
    struct spa_hook  dev_listener;        /* sink event subcriber */
 
-   int32_t sink_index; 
+   int32_t sink_index;                   /* index sink playback */ 
 
-   int32_t sink_device;  
+   int32_t sink_device;                  /* index sink playback */ 
 
    _Bool    sink_ready; 
 
@@ -38,7 +38,10 @@ typedef struct sink {
    
    struct spa_source *sink_db_timer;        /* sink debounce timer  (pw shipped now we need db smdh)*/  
 
-   struct pw_loop   *sink_cached_loop_db; 
+   struct pw_loop   *sink_cached_loop_db;
+
+   int32_t  sink_input_done;                    /* check if an input is been set */  
+
 
 }sod_sink;
 
@@ -51,6 +54,5 @@ void sod_sink_set_volume(sod_sink *p, float watch_);
 
  void sod_sink_remove(void *data, uint32_t id);
 
-
-
+void sod_sink_set_capture_sink(sod_sink *capture_, const uint32_t size, const int32_t sink_input_index , const int32_t sink_input_device);
 #endif /* [AUDIO_SINK__] */ 
