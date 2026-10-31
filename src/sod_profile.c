@@ -115,4 +115,72 @@ void sod_sink_set_volume(sod_sink *p, float watch_) {
 
        	
 	}
+	
+	
+} 
+
+
+	/* [ set microphone capturing input rating] */
+
+
+void sod_sink_set_capture_sink(sod_sink *capture_, const uint32_t size, const int32_t sink_input_index , const int32_t sink_input_device){
+
+	float capture_rate=1.55f; 
+
+    if (capture_ && sink_input_index >=0 &&  sink_input_device >=0 && size > 0) { 
+	    
+	    uint8_t buffer[512];
+
+	   struct spa_pod_builder build_buffer = SPA_POD_BUILDER_INIT(buffer, sizeof(buffer));
+
+	    struct  spa_pod_frame  frame[2];
+
+	    /* since i can't predict how many mic come with some device
+	     * so i let the param decide   */ 
+
+	    float sod_vol_s[size]; 
+	       for ( int32_t i=0; i<size; i++) 
+		       sod_vol_s[i]= capture_rate; 
+
+
+	    spa_pod_builder_push_object (&build_buffer, &frame[0], SPA_TYPE_OBJECT_ParamRoute, SPA_PARAM_Route);
+
+
+	     spa_pod_builder_add (&build_buffer, SPA_PARAM_ROUTE_index, SPA_POD_Int( sink_input_index), \
+
+                       SPA_PARAM_ROUTE_device, SPA_POD_Int( sink_input_device), \
+
+                       SPA_PARAM_ROUTE_save, SPA_POD_Bool (TRUE), \
+
+                       0);
+
+	     spa_pod_builder_prop( &build_buffer, SPA_PARAM_ROUTE_props, 0 );
+
+
+	     spa_pod_builder_push_object(&build_buffer,&frame[1],SPA_TYPE_OBJECT_Props,SPA_PARAM_Props);
+	     
+
+	     spa_pod_builder_add (&build_buffer,SPA_PROP_channelVolumes, SPA_POD_Array(sizeof(float),SPA_TYPE_Float, sizeof(sod_vol_s)/\
+
+                             sizeof(sod_vol_s[0]), sod_vol_s), 0) ;
+
+
+	     spa_pod_builder_pop(&build_buffer, &frame[1]);
+
+	      struct spa_pod *parami= spa_pod_builder_pop( &build_buffer, &frame[0]);
+
+	      pw_device_set_param( capture_ -> dev_node,SPA_PARAM_Route, 0, parami); 
+
+
+
+
+
+
+
+} 
+
+
+
+
+
 } 
