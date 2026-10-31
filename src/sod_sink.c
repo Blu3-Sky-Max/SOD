@@ -17,8 +17,10 @@ static void sink_db(void *data,uint64_t expirations ){
    sod_sink *user_data = data; 
 
 
-
+   if ( user_data -> sink_ready) 
     sod_sink_set_volume( user_data, user_data -> parent ->  T_volume);
+
+
 
 } 	
 
@@ -49,6 +51,10 @@ void sod_sink_remove(void *data, uint32_t id) {
 
 		  sod_sink_reset(T); 
 
+		  if ( T  ->sink_input_done > 0)
+			 T -> sink_input_done=0;  
+			  
+
 		  T -> id =0; 
 		  T -> device_id =0; 
 
@@ -77,7 +83,7 @@ void sod_sink_remove(void *data, uint32_t id) {
 
 static void sod_sink_param(void *data, int seq,  uint32_t id, uint32_t index, uint32_t next,const struct spa_pod *param){ 
      
-	sod_sink *user_data =data;
+	sod_sink *user_data =data; uint32_t size; 
 
      int32_t sod_index, sod_device, direction_;  	
 
@@ -129,7 +135,7 @@ static void sod_sink_param(void *data, int seq,  uint32_t id, uint32_t index, ui
 								    ? "OUTPUT" : "INPUT" ); 
 						direction_=sod_direction; 
 
-					sod_error("%u\n", sod_direction); 	
+					sod_error("%u  id: %u\n", sod_direction, user_data -> id); 	
 						break; 	
 					} 
 				case
@@ -148,7 +154,10 @@ static void sod_sink_param(void *data, int seq,  uint32_t id, uint32_t index, ui
 
 					for( int32_t i=0; i  <g_num; i++){ 
 						sod_print("Volume[%u]: %f\n", i,sod_vol[i]);
-					} 
+						
+					}
+					    size= g_num; 
+				         	
 					SOD_PUT;
 
 						break; 
@@ -208,12 +217,49 @@ static void sod_sink_param(void *data, int seq,  uint32_t id, uint32_t index, ui
 
 	    user_data -> sink_ready = TRUE; 
 
-	 //   sod_sink_set_volume( user_data, user_data -> parent ->  T_volume);
+	 //  deploy the timer 
 	 
 	    pw_loop_update_timer(user_data -> sink_cached_loop_db, user_data -> sink_db_timer, &db_sink_time,NULL,FALSE);
 
 
     }
+
+     /* [ sink input] meaning capturing mic setting */
+    
+    
+    /*  the mechanism here is that when there's more than one sink input connected
+     *  they have same id but the sod_index and sod_device get increased based
+     *  on the input device attached to the machine. so using bitmask to control
+     *  the input setting so if the first sod_index is 0 then !( 0 & (1 << 0))  then 
+     *  you have !(1) which true. store add them up which we have sink_input_done as
+     *  1 then when sod_index is 1 which we have !(1 & (1<< 1) which we have !(3) 
+     *  true then add them together in or bitmask so we have 3 sink_input_done
+     *  third comes sod_index 2 same process sink_input_done save 7
+     *
+     *  if at the begin the sod_index comes back as 0 after saved sink_input_done
+     *   so it would be !(1 & (1 << 1) ) which is false it won't set input twice 
+     *   !(1) which it's 1. 
+     *
+     *   the sink output does create a new slot with different so it easy to control 
+     *   but sink input doesn't. 
+     */ 
+
+
+     if ( sod_index  >=0 &&  sod_device >=0  && direction_ == SPA_DIRECTION_INPUT && !( user_data -> sink_input_done & (1u << sod_index))\
+		     && size > 0 ) {
+
+
+          user_data -> sink_input_done |= (1u <<  sod_index) ; 
+
+
+	 sod_sink_set_capture_sink( user_data, size, sod_index, sod_device );
+
+	size=0;   
+     } 
+
+
+
+
 
 
 } 
@@ -298,7 +344,7 @@ void Audio_sink ( const struct spa_dict *props, uint32_t id , sod_info *data ) {
 
 	 D_c -> sink_index = -1; 
 
-	 D_c -> sink_device = -1; 
+	 D_c -> sink_device = -1;
 
 	 D_c -> sink_ready = FALSE;
 
