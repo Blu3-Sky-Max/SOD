@@ -734,6 +734,46 @@ if (sod_data.sod_sink){
 } 
 
 
+
+/* [ destory mic Stream/Input/Audio] */ 
+
+
+
+
+if ( sod_data. n_capture > 0 ){ 
+
+	for ( uint32_t i=0; i< sod_data.n_capture; i++){ 
+
+		sod_capture *T = sod_data.captures[i]; 
+
+		if ( ! T) 
+			continue; 
+
+	  spa_hook_remove(&T -> sod_capture_listener);
+
+
+	  if ( T -> capture_db_timer) 
+		  pw_loop_destroy_source(T -> sod_capture_loop , T->capture_db_timer);
+
+	  if ( T -> sod_capture_node){ 
+		   pw_proxy_destroy((struct pw_proxy *)T -> sod_capture_node);
+
+		   T -> sod_capture_node = NULL; 
+	  } 
+
+	   free (T); 
+
+	   T=NULL; 
+
+	}
+
+   sod_data. n_capture=0; 	
+
+
+
+
+	} 
+
  /* [destory mic ] */ 
 
 if ( sod_data.mic_count > 0){ 
