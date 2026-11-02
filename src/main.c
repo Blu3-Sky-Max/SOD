@@ -700,6 +700,8 @@ if ( sod_data.sod_node_tracker){
 
 if (sod_data.sod_sink){
 
+               /* clrs: the loop is n + 1 */ 	  
+ 
 	for (uint32_t t=0;  t < sod_data.n_sod_sink && sod_data.sod_sink[t] != NULL; t++){ 
 
 	       sod_sink *Tear= sod_data.sod_sink[t];
@@ -740,7 +742,6 @@ if (sod_data.sod_sink){
 
 
  
-//spa_hook_remove(&sod_data.sod_registry_listener);
 pw_proxy_destroy((struct pw_proxy *)sod_data.sod_registry);
 pw_core_disconnect(sod_data.sod_core);
 pw_context_destroy(sod_data.sod_context);
