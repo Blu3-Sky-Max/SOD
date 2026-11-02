@@ -337,7 +337,7 @@ if (info->change_mask & PW_NODE_CHANGE_MASK_PROPS  && info->props != NULL ) {
 
 
     /* check if call back change_mask is same as MASK_STATE
-     * PW_NODE_CHANGE_MASK_STATE  is (1 << 2) which is bitfied
+     * PW_NODE_CHANGE_MASK_STATE  is (1 << 2) which is bitwise
      * so if the call back is same as 0x4 and bitwise calculation
      * return  0x4 same as (1 << 2)then it hit and add timer
      *  to it */ 
@@ -734,8 +734,45 @@ if (sod_data.sod_sink){
 } 
 
 
+ /* [destory mic ] */ 
 
-	       
+if ( sod_data.mic_count > 0){ 
+
+   for ( uint32_t i=0; i< sod_data.mic_count; i++){ 
+          
+	   sod_mic *Tear= sod_data.mics[i];
+
+	  if ( ! Tear) 
+		 continue; 
+
+
+ 	  spa_hook_remove(&Tear -> mic_node_listener);
+
+
+	 if ( Tear -> mic_db_timer) 
+		 pw_loop_destroy_source(Tear -> sod_mic_loop , Tear -> mic_db_timer);
+
+
+	 if  (Tear -> mic_node){ 
+		  pw_proxy_destroy((struct pw_proxy *)Tear -> mic_node); 
+
+		  Tear -> mic_node = NULL; 
+	 }
+
+
+	 free(Tear); 
+          
+	 Tear = NULL; 
+
+   } 
+    
+    sod_data . mic_count=0; 
+
+
+
+
+
+   } 	   
 
 
 
