@@ -664,7 +664,7 @@ spa_hook_remove(&sod_data.sod_registry_listener);
  /* [destory sod_app_handler] */ 
 if ( sod_data.sod_node_tracker){
 
- for ( size_t i=0; sod_data.sod_node_tracker[i] !=NULL && i < sod_data.n_counter; i++){ 
+ for ( size_t i=0; i < sod_data.n_counter && sod_data.sod_node_tracker[i] !=NULL; i++){ 
 	  sod_app_handler *dest= sod_data.sod_node_tracker[i]; 
 
 	 spa_hook_remove(&dest -> sod_node_hook);
@@ -693,6 +693,50 @@ if ( sod_data.sod_node_tracker){
  sod_data.n_counter=0;  
 
 } 
+
+/* [tear down  sink ] */ 
+
+
+
+if (sod_data.sod_sink){
+
+	for (uint32_t t=0;  t < sod_data.n_sod_sink && sod_data.sod_sink[t] != NULL; t++){ 
+
+	       sod_sink *Tear= sod_data.sod_sink[t];
+	          
+	          if (! Tear) 
+			  continue; 
+	       
+	       spa_hook_remove(&Tear -> dev_listener);
+
+	       if ( Tear -> sink_db_timer) 
+		       pw_loop_destroy_source(Tear -> sink_cached_loop_db , Tear ->sink_db_timer);
+
+	       if ( Tear -> dev_node){  
+		        pw_proxy_destroy((struct pw_proxy *)Tear -> dev_node);
+
+			Tear -> dev_node = NULL; 
+	       } 
+
+	       free(Tear); 
+
+	       Tear = NULL; 
+	} 
+	 
+	 free(sod_data.sod_sink); 
+
+	 sod_data.sod_sink=NULL; 
+
+	 sod_data.n_sod_sink=0; 
+
+} 
+
+
+
+	       
+
+
+
 
 
  
