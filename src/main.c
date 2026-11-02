@@ -657,8 +657,46 @@ pw_registry_add_listener(sod_data.sod_registry,&sod_data.sod_registry_listener, 
 
 pw_main_loop_run(sod_data.sod_loop); 
 
- 
+
+/* [destory event subcriber] */ 
 spa_hook_remove(&sod_data.sod_registry_listener);
+
+ /* [destory sod_app_handler] */ 
+if ( sod_data.sod_node_tracker){
+
+ for ( size_t i=0; sod_data.sod_node_tracker[i] !=NULL && i < sod_data.n_counter; i++){ 
+	  sod_app_handler *dest= sod_data.sod_node_tracker[i]; 
+
+	 spa_hook_remove(&dest -> sod_node_hook);
+
+	 if ( dest -> db_timer) 
+		 pw_loop_destroy_source(dest -> sod_update_loop, dest ->db_timer);
+
+
+	 if (dest -> sod_node){  
+
+	 pw_proxy_destroy(dest -> sod_node);
+	  dest -> sod_node = NULL; 
+	 } 
+
+
+	 free(dest); 
+
+	 dest = NULL; 
+
+
+
+
+ } 
+ free(sod_data.sod_node_tracker); 
+  sod_data.sod_node_tracker=NULL;
+ sod_data.n_counter=0;  
+
+} 
+
+
+ 
+//spa_hook_remove(&sod_data.sod_registry_listener);
 pw_proxy_destroy((struct pw_proxy *)sod_data.sod_registry);
 pw_core_disconnect(sod_data.sod_core);
 pw_context_destroy(sod_data.sod_context);
