@@ -4,10 +4,11 @@
 
 #define DEBUG	
 
-/* ignore the pulse  volume control (flooding)  */
+/* ignore system audio  */
  static const char *capture_ignore[] = { 
        	"PulseAudio Volume Control",
-        "GNOME Settings"
+        "GNOME Settings", 
+	""
 };
 
 
@@ -174,10 +175,24 @@ void sod_mic_capture(const struct spa_dict *props,uint32_t id,  sod_info *user_d
 
 	 const char *media_role= spa_dict_lookup (props, PW_KEY_MEDIA_ROLE );
 
-	 const char *stream_monitor = spa_dict_lookup  (props, PW_KEY_STREAM_MONITOR); 
+	 const char *stream_monitor = spa_dict_lookup  (props, PW_KEY_APP_PROCESS_ID);
+
+
+	/* i use "" to control the slient kde audio control 
+	 * cause when you're using the audio control it at the settings
+	 * it muted all the other apps playing and can't track the 
+	 * media.name nor application.process.id
+	 * so i used the node name to ignore it 
+	 *
+	 * i don't think there will an app without or with a node_name "" 
+	 * of '\0'. 
+	 *
+	 * i couldn't find one yet
+	 *
+	 * i added it to ignore apps that's why i commented it out*/  
                  
 	  if (Node_name !=NULL && Media_class !=NULL && strcmp("Stream/Input/Audio", Media_class) == 0 &&\
-	   ignore_unwanted_mic(Node_name) == FALSE) { 
+	   ignore_unwanted_mic(Node_name) == FALSE /* && ! strcmp (Node_name, "") ==0 */) { 
 
 		 for ( uint32_t i=0; i < user_data -> n_capture; i++) 
 			
