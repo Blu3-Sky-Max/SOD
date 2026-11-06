@@ -94,7 +94,7 @@ Stop it with Ctrl+C. Once it is running, play audio in Chrome, Firefox, Spotify 
 
 - **Chrome and the microphone:** Chrome destroys its playback streams and creates one new stream when a mic opens, so per-tab restore is not possible. Firefox and Boxes restore correctly.
 - **Tracker capacity:** the node tracker has a fixed capacity (`Track_Capacity`). Streams beyond it are not tracked.
-- **Shutdown:** microphone controllers are not yet freed on exit, a small known leak under valgrind.
+- **Shutdown:** all trackers, sinks, captures and microphones are freed on exit. The few remaining valgrind reports come from `pw_context_new` and also appear in a minimal PipeWire program.
 - **Mute, not pause:** PipeWire has no generic pause, so ducked apps keep playing silently.
 
 ## Roadmap
@@ -104,7 +104,7 @@ Stop it with Ctrl+C. Once it is running, play audio in Chrome, Firefox, Spotify 
 - [x] Dynamic node tracking and cleanup
 - [x] Microphone awareness (capture-stream auto-mute)
 - [x] Sink volume control through the PipeWire device `Route` param
-- [ ] Full teardown of microphone controllers on exit
+- [x] Full teardown on exit (app tracker, sinks, captures, microphone controllers)
 - [ ] Per-profile bass EQ and use of media keys (`media.role`, title, artist) as context
 - [ ] Full log file output
 - [ ] Audio routing
