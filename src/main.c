@@ -104,7 +104,8 @@ const char *sod_track_app[] = {
 
     "Boxes", 
 
-    "spotify" 
+    "spotify",
+   "virt-manager" 
 };
 
 
