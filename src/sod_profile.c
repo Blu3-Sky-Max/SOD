@@ -74,9 +74,9 @@ void sod_sink_set_volume(sod_sink *p, float watch_) {
 	if ( watch_ <= 0.015) 
 	 watch_ = 0.015; 
 
-
-	if ( watch_ >= 1.53 ) 
-		watch_= 1.53; 
+       // you can check profile.h to see how conversion 
+	if ( watch_ >= 3.7 ) 
+		watch_= 3.63; 
 
 		
 
