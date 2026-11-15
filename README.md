@@ -22,9 +22,9 @@ SOD is a Linux daemon written in C that watches the PipeWire audio graph, applie
 
 | Profile   | Volume | Microphone |
 |-----------|--------|------------|
-| `library` | 80%    | off        |
-| `office`  | 60%    | on         |
-| `focus`   | 28%    | on         |
+| `library` | 74%    | off        |
+| `office`  | 84%    | on         |
+| `focus`   | 45%    | on         |
 | `meeting` | 60%    | on         |
 | `night`   | 1.5%   | off        |
 | `gaming`  | 153%   | on         |
