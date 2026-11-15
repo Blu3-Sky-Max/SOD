@@ -20,15 +20,33 @@
 
 #define _OPERATING_VOLUME       
 
-/* volume range  0.015 - 153 if beyond, sod will control it */ 
+/* volume range  25 - 153 if beyond, sod will control it */ 
+
+/*  caculation behind this goes like: 
+ *  e.g library which is 40%, 40 /100
+ *  gives 0.4 the cubic root of 0.4 gives
+ *  0.736806 so rounding gives 0.74  mutiply 
+ *  by 100 give 74%
+ *
+ *
+ *  if you have no calculator with you, you can 
+ *  take the 0.4^(1/3) or 0.4^(0.3333) should give
+ *  you 0.736806 so  rounding it up gives 0.74
+ *  then mutiply by 100 gives 74%
+ *
+ *  to calculate it you know what to do give the 
+ *  covert the raw back 0.736806 ^3 gives .39999 
+ *  then we have 40 back
+ *
+ */ 
 
 
-#define Library_Vol  40 
-#define Focus_Vol    7 
-#define Office_Vol   60
-#define Night_Vol    0.015
-#define Meeting_Vol  60 
-#define Gaming_Vol   153
+#define Library_Vol  40     // 74% 
+#define Focus_Vol    9      //45 %
+#define Office_Vol   60     // 84%
+#define Night_Vol    0.015   // 25%
+#define Meeting_Vol  22      // 60%      
+#define Gaming_Vol   358     // 153%
 
 
 
