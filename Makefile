@@ -12,8 +12,8 @@ LIBS=-lm
 
 CFLAGS += -MMD -MP
 
-$(OUTPUT): main.o profile.o mute.o source.o capture.o signal.o sink.o sink_reset.o
-	$(BLU3) -o $(OUTPUT) main.o profile.o mute.o source.o capture.o signal.o sink.o sink_reset.o   $(CFLAGS) $(LIBS)
+$(OUTPUT): main.o profile.o mute.o source.o capture.o signal.o sink.o sink_reset.o latch.o
+	$(BLU3) -o $(OUTPUT) main.o profile.o mute.o source.o capture.o signal.o sink.o sink_reset.o latch.o $(CFLAGS) $(LIBS)
 
 
 main.o: $(SRC)/main.c
@@ -46,6 +46,8 @@ sink_reset.o : $(SRC)/sod_sink_reset.c
 	 @$(BLU3) -c $(SRC)/sod_sink_reset.c  -o sink_reset.o $(CFLAGS)
 
 
+latch.o:  $(SRC)/sod_latch.c 
+	@$(BLU3) -c $(SRC)/sod_latch.c  -o latch.o $(CFLAGS)
 clean:
 	@rm -f *.o $(OUTPUT)
 
