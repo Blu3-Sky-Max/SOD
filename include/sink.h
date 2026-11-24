@@ -8,6 +8,7 @@
 
 #include "blu3.h" 
 
+#include "latch.h" 
 
 #define SINK_MAX  16 
 
@@ -42,6 +43,7 @@ typedef struct sink {
 
    int32_t  sink_input_done;                    /* check if an input is been set */  
 
+    sod_sink_latch L;                           /* latching device */ 
 
 }sod_sink;
 
