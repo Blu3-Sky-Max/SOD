@@ -1,6 +1,6 @@
 # SOD: Context-Aware Audio Orchestrator for Linux
 
-> **Status: alpha.** Core features work and are tested daily on Fedora (GNOME, PipeWire). DSP, audio routing and log-file output are not built yet. See [Roadmap](#roadmap) and [Known limitations](#known-limitations).
+> **Status: alpha.** Core features work and are tested daily on Fedora (GNOME,KDE Plasma PipeWire). DSP, audio routing and log-file output are not built yet. See [Roadmap](#roadmap) and [Known limitations](#known-limitations).
 
 SOD is a Linux daemon written in C that watches the PipeWire audio graph, applies a volume profile to the system output, and automatically mutes and unmutes apps so only one plays at a time. It talks to PipeWire through its native C API and has no GUI: you pick a profile, and SOD keeps the audio session in order while it runs.
 
