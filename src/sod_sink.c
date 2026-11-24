@@ -2,6 +2,25 @@
 
 
 
+
+static  const char *latch_names[]= { 
+	"", 
+	"SPEAKER", 
+
+	"HEADPHONE", 
+
+	"HDMI", 
+
+	"BLUETOOTH", 
+
+	"DISPLAYPORT",
+
+	"HEADSET",
+
+	"UNKNOWN" 
+}; 
+
+
  /* [ debounce timer] */
 static struct timespec db_sink_time = {
        .tv_sec = 0,
@@ -271,7 +290,7 @@ static void sod_sink_info (void *data, const struct pw_device_info *info){
 
 
 
- sod_print("Device Node id:%i\nDevice Node name:%s\nDevice Node Description:%s\nDevice Id:%lu\n\n", pw_data -> id, pw_data -> Node_name, pw_data -> Node_description, pw_data -> device_id); 
+ sod_print("Device Node id:%i\nDevice Node name:%s\nDevice Node Description:%s\nDevice Id:%lu\nClass_latch:%s\n\n", pw_data -> id, pw_data -> Node_name, pw_data -> Node_description, pw_data -> device_id, latch_names[ pw_data -> L] ); 
 
 
    if ( info ->change_mask & PW_DEVICE_CHANGE_MASK_PARAMS ) 
@@ -347,6 +366,8 @@ void Audio_sink ( const struct spa_dict *props, uint32_t id , sod_info *data ) {
 	 D_c -> sink_device = -1;
 
 	 D_c -> sink_ready = FALSE;
+
+	 D_c -> L = sod_latch_c(node_name); 
 
 	 D_c -> sink_cached_loop_db = data -> sod_cached_loop; 
 
